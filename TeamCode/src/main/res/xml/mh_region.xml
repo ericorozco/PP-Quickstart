@@ -2,25 +2,33 @@
 <Robot type="FirstInspires-FTC">
     <LynxUsbDevice name="Control Hub Portal" serialNumber="(embedded)" parentModuleAddress="173">
         <LynxModule name="Expansion Hub 2" port="2">
-            <goBILDA5202SeriesMotor name="leftFront" port="0" />
+            -<goBILDA5202SeriesMotor name="leftFront" port="2" />
             <goBILDA5202SeriesMotor name="leftRear" port="1" />
-            <goBILDA5202SeriesMotor name="OuttakeSliderLeft" port="2" />
-            <Servo name="OuttakeElbowLeft" port="0" />
-            <Servo name="IntakeWrist" port="1" />
-            <Servo name="IntakeElbowLeft" port="2" />
+            <goBILDA5202SeriesMotor name="OuttakeSliderLeft" port="3" />
+            <goBILDA5202SeriesMotor name="LeftHanger" port="0" />
+<!--            <Motor name="perp" port="3" />-->
+            <Servo name="OuttakeElbowLeft" port="2" />
+            <Servo name="LeftIntakeStar" port="0" />
+<!--
+            <Servo name="IntakeElbowLeft" port="" />
+-->
             <Servo name="IntakeSliderLeft" port="3" />
-            <Servo name="OuttakeClaw" port="4" />
-            <goBILDAPinpoint name="pinpoint" port="0" bus="0" />
+            <Servo name="OuttakeClaw" port="1" />
+           <goBILDAPinpoint name="pinpoint" port="0" bus="0" />
+            <RevColorSensorV3 name="colorSensor" port="0" bus="1"/>
+
         </LynxModule>
         <LynxModule name="Control Hub" port="173">
             <goBILDA5202SeriesMotor name="rightFront" port="0" />
             <goBILDA5202SeriesMotor name="rightRear" port="1" />
-            <goBILDA5202SeriesMotor name="OuttakeSliderRight" port="2" />
-            <Motor name="rightEncoder" port="3" />
+            <goBILDA5202SeriesMotor name="RightHanger" port="2" />
+<!--
+            <Motor name="par" port="3" />
+-->
             <Servo name="IntakeClaw" port="2" />
             <Servo name="IntakeSliderRight" port="3" />
             <Servo name="IntakeElbowRight" port="4" />
-            <Servo name="OuttakeElbowRight" port="5" />
+            <Servo name="RightIntakeStar" port="5" />
             <ControlHubImuBHI260AP name="imu" port="0" bus="0" />
         </LynxModule>
     </LynxUsbDevice>

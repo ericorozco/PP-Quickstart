@@ -3,34 +3,32 @@ package pedroPathing.TeleOp;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.util.Constants;
-import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-import pedroPathing.constants.FConstants;
-import pedroPathing.constants.LConstants;
-
-
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pedroPathing.Crush;
+import pedroPathing.constants.FConstants;
+import pedroPathing.constants.LConstants;
 
 /**
  *
  * @author Gerry DLIII - 18908 Mighty Hawks
  * @version 1.0, 02/11/2024
  */
-@TeleOp(name = "AyCrush 2P PP", group = "ITD PP Teleop")
-public class AyCrush2P_PP extends OpMode {
-    private static final Logger log = LoggerFactory.getLogger(AyCrush2P_PP.class);
+@TeleOp(name = "AyCrush 1P PP", group = "ITD PP Teleop")
+public class AyCrush1P_PP extends OpMode {
+    private static final Logger log = LoggerFactory.getLogger(AyCrush1P_PP.class);
     //Pedro Pathing Variables
     private Follower follower;
     private final Pose startPose = new Pose(0,0,0);
@@ -48,22 +46,22 @@ public class AyCrush2P_PP extends OpMode {
     private DcMotorEx leftRear;
     private DcMotorEx rightFront;
     private DcMotorEx rightRear;
-    private DcMotorEx OuttakeSliderRight;
+    //private DcMotorEx OuttakeSliderRight;
     private DcMotorEx OuttakeSliderLeft;
     private Servo IntakeSliderRight;
     private Servo IntakeSliderLeft;
 //    private Servo IntakeClaw;
 
     //private Servo OuttakeWrist;
-    private Servo OuttakeElbowRight;
+    //private Servo OuttakeElbowRight;
     private Servo OuttakeElbowLeft;
     private Servo OuttakeClaw;
     private Servo IntakeElbowRight;
-    private Servo IntakeElbowLeft;
-    //private Servo IntakeClaw;
+    //private Servo IntakeElbowLeft;
     private Servo IntakeClaw;
-    private Servo IntakeWrist;
-   // private ColorSensor IntakeSensor;
+    //private Servo IntakeClaw;
+    //private Servo IntakeWrist;
+    private ColorSensor colorSensor;
     public static int HIGH_BASKET = 4150;
     public static int HIGH_CHAMBER = 600;
     public static int initialPositionLeft, initialPositionRight;
@@ -77,6 +75,7 @@ public class AyCrush2P_PP extends OpMode {
     final double IntakeClawPositionClose = 0.6;
     final double IntakeClawPositionOpen = 0.35;
     public static double IntakeSliderPositionOut = 0.65;
+
     final double IntakeSliderPositionIN = 0.45;
     final double IntakeElbowPositionIn = 0.85;
     final double IntakeElbowPositionOut = 0.23;
@@ -94,6 +93,7 @@ public class AyCrush2P_PP extends OpMode {
     public int PlayerSelection = 2;
     public int leftPosition, rightPosition;
     public ElapsedTime slidersElapsedTime;
+    private int currentPos;
 
 
     /**
@@ -105,6 +105,8 @@ public class AyCrush2P_PP extends OpMode {
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
+        colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
+
 
         //Driving Motors Mapping and Setup
         //NOT IN USE IF USING PEDRO PATHING
@@ -138,32 +140,32 @@ public class AyCrush2P_PP extends OpMode {
 
         //Servo Claw and Elbow Mapping and Setup
 //        IntakeClaw = hardwareMap.get(Servo.class, "IntakeClaw");
-        IntakeWrist = hardwareMap.get(Servo.class, "IntakeWrist");
+        //IntakeWrist = hardwareMap.get(Servo.class, "IntakeWrist");
         IntakeClaw = hardwareMap.get(Servo.class, "IntakeClaw");
         IntakeElbowRight = hardwareMap.get(Servo.class, "IntakeElbowRight");
-        IntakeElbowLeft = hardwareMap.get(Servo.class, "IntakeElbowLeft");
+        //IntakeElbowLeft = hardwareMap.get(Servo.class, "IntakeElbowLeft");
         //IntakeSensor = hardwareMap.get(ColorSensor.class, "IntakeSensor");
 
         IntakeElbowRight.setDirection(Servo.Direction.FORWARD);
-        IntakeElbowLeft.setDirection(Servo.Direction.REVERSE);
+        //IntakeElbowLeft.setDirection(Servo.Direction.REVERSE);
 
         //IntakeClaw.scaleRange(0.0, 1.0);
         //IntakeElbowRight.scaleRange(0.0, 1.0);
         //IntakeElbowLeft.scaleRange(0.0, 1.0);
 
-        IntakeWrist.setPosition(0.5); //Init Position for Wrist
+        //IntakeWrist.setPosition(0.5); //Init Position for Wrist
         /**
          * Outtake Code Starts Here
          */
         //Outtake
         // Sliders Mapping and Setup
-        OuttakeSliderRight = hardwareMap.get(DcMotorEx.class, "OuttakeSliderRight");
+        //OuttakeSliderRight = hardwareMap.get(DcMotorEx.class, "OuttakeSliderRight");
         OuttakeSliderLeft = hardwareMap.get(DcMotorEx.class, "OuttakeSliderLeft");
 
-        OuttakeSliderRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //OuttakeSliderRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         OuttakeSliderLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        OuttakeSliderRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        //OuttakeSliderRight.setDirection(DcMotorSimple.Direction.FORWARD);
         OuttakeSliderLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         if(Crush.getInstance().areSlidersInitialized()){
             initialPositionLeft = Crush.getInstance().getLeft();
@@ -171,17 +173,18 @@ public class AyCrush2P_PP extends OpMode {
 
         }else{
             initialPositionLeft = OuttakeSliderLeft.getCurrentPosition();
-            initialPositionRight = OuttakeSliderRight.getCurrentPosition();
+            //initialPositionRight = OuttakeSliderRight.getCurrentPosition();
         }
 
 
         //Servo Claw, Elbow, and Wrist Mapping and Setup
         OuttakeClaw = hardwareMap.get(Servo.class, "OuttakeClaw");
-        OuttakeElbowRight = hardwareMap.get(Servo.class, "OuttakeElbowRight");
+        //OuttakeElbowRight = hardwareMap.get(Servo.class, "OuttakeElbowRight");
         OuttakeElbowLeft = hardwareMap.get(Servo.class, "OuttakeElbowLeft");
+        OuttakeSliderLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         OuttakeClaw.setDirection(Servo.Direction.FORWARD);
-        OuttakeElbowRight.setDirection(Servo.Direction.FORWARD);
+        //OuttakeElbowRight.setDirection(Servo.Direction.FORWARD);
         OuttakeElbowLeft.setDirection(Servo.Direction.REVERSE);
         TurnOuttakeSlidersOff = false;
 
@@ -309,7 +312,8 @@ public class AyCrush2P_PP extends OpMode {
                 break;
             case 2:
                 //All Intake Code (Player 1)
-                //Intake Slider
+                //Intake Sliders
+                //telemetry.update();
                 if(gamepad1.cross && !IntakeSliderChanged){
                     if(intakeCurrentState==0){
                         intakeSlidersElbow(IntakeState.OUT);
@@ -334,7 +338,7 @@ public class AyCrush2P_PP extends OpMode {
                  }
 
                 if(gamepad1.square && intakeCurrentState==1){
-                    IntakeElbowLeft.setPosition(IntakeElbowPositionGrab);
+                    //IntakeElbowLeft.setPosition(IntakeElbowPositionGrab);
                     IntakeElbowRight.setPosition(IntakeElbowPositionGrab);
                     IntakeClaw.setPosition(IntakeClawPositionClose);
                 }
@@ -344,17 +348,17 @@ public class AyCrush2P_PP extends OpMode {
                 } else if (gamepad1.right_trigger>0.25) {
                     IntakeClaw.setPosition(IntakeClawPositionOpen);
                 }
-                if (gamepad1.left_bumper && IntakeWrist.getPosition() <= 0.6 && !IntakeWristChanged){
-                    IntakeWrist.setPosition(IntakeWrist.getPosition() + 0.075);
-                    telemetry.addData("Intake Wrist Pos: ", IntakeWrist.getPosition());
-                    IntakeWristChanged = true;
-                }else if(gamepad1.right_bumper && IntakeWrist.getPosition() > 0.3 && !IntakeWristChanged){
-                    IntakeWrist.setPosition(IntakeWrist.getPosition() - 0.075);
-                    telemetry.addData("Intake Wrist Pos: ", IntakeWrist.getPosition());
-                    IntakeWristChanged = true;
-                } else if (!gamepad1.left_bumper && !gamepad1.right_bumper) {
-                    IntakeWristChanged = false;
-                }
+                //if (gamepad1.left_bumper && IntakeWrist.getPosition() <= 0.6 && !IntakeWristChanged){
+                    //IntakeWrist.setPosition(IntakeWrist.getPosition() + 0.075);
+                    //telemetry.addData("Intake Wrist Pos: ", IntakeWrist.getPosition());
+                    //IntakeWristChanged = true;
+                //}else if(gamepad1.right_bumper && IntakeWrist.getPosition() > 0.3 && !IntakeWristChanged){
+                    //IntakeWrist.setPosition(IntakeWrist.getPosition() - 0.075);
+                    //telemetry.addData("Intake Wrist Pos: ", IntakeWrist.getPosition());
+                    //IntakeWristChanged = true;
+                //} else if (!gamepad1.left_bumper && !gamepad1.right_bumper) {
+                    //IntakeWristChanged = false;
+                //}
 
 
                 //All Outtake Code (Player 2)
@@ -371,13 +375,23 @@ public class AyCrush2P_PP extends OpMode {
                     outtakeSliders(5, 2000, 0);
 
                 }else if(gamepad2.dpad_down){
-
-                    outtakeSliders(-100, 2000, 1);
+                    OuttakeSliderLeft.setTargetPosition(OuttakeSliderLeft.getCurrentPosition() - 100);
+                    OuttakeSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    OuttakeSliderLeft.setPower(0.4);
+                    currentPos = OuttakeSliderLeft.getCurrentPosition();
+                    //outtakeSliders(-100, 2000, 1);
 
                 }else if(gamepad2.dpad_up){
+                    OuttakeSliderLeft.setTargetPosition(OuttakeSliderLeft.getCurrentPosition() + 100);
+                    OuttakeSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    OuttakeSliderLeft.setPower(0.4);
+                    currentPos = OuttakeSliderLeft.getCurrentPosition();
+                    //outtakeSliders(100, 2000, 1);
 
-                    outtakeSliders(100, 2000, 1);
-
+                } else if (!gamepad2.dpad_down && !gamepad2.dpad_up) {
+                    OuttakeSliderLeft.setTargetPosition(currentPos);
+                    OuttakeSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    OuttakeSliderLeft.setPower(0.4);
                 }
 
 
@@ -430,15 +444,15 @@ public class AyCrush2P_PP extends OpMode {
         //General code for both options (1 or 2 Players)
         if((TurnOuttakeSlidersOff && slidersElapsedTime.seconds() > 5.0)){
             OuttakeSliderLeft.setPower(0.0);
-            OuttakeSliderRight.setPower(0.0);
+            //OuttakeSliderRight.setPower(0.0);
             TurnOuttakeSlidersOff = false;
         }
 
 
         //Outtake elbow automatically goes out after reaching high basket position
-        if((OuttakeSliderLeft.getCurrentPosition()>(HIGH_BASKET-20) && OuttakeSliderRight.getCurrentPosition()>(HIGH_BASKET-20))
-                && (((OuttakeElbowLeft.getPosition()==OuttakeElbowPositionMiddle || OuttakeElbowRight.getPosition()==OuttakeElbowPositionMiddle))
-                || (OuttakeElbowLeft.getPosition()==OuttakeElbowPositionIn || OuttakeElbowRight.getPosition()==OuttakeElbowPositionIn))){
+        if((OuttakeSliderLeft.getCurrentPosition()>(HIGH_BASKET-20))
+                && (((OuttakeElbowLeft.getPosition()==OuttakeElbowPositionMiddle)
+                || (OuttakeElbowLeft.getPosition()==OuttakeElbowPositionIn)))){
 
             OuttakeElbowMove(OuttakeElbowPositionOut);
         }
@@ -454,17 +468,22 @@ public class AyCrush2P_PP extends OpMode {
         // Lets get the target positions.
         telemetry.addData("Intake Slider Right Pos: ", IntakeSliderRight.getPosition() );
         telemetry.addData("Intake Slider Left Pos: ", IntakeSliderLeft.getPosition() );
-        telemetry.addData("OuttakeRight Pos: ", OuttakeSliderRight.getCurrentPosition() );
+        //telemetry.addData("OuttakeRight Pos: ", OuttakeSliderRight.getCurrentPosition() );
         telemetry.addData("OuttakeLeft Pos: ", OuttakeSliderLeft.getCurrentPosition() );
         telemetry.addData("Outtake Elbow L Pos: ", OuttakeElbowLeft.getPosition() );
-        telemetry.addData("Outtake Elbow R Pos: ", OuttakeElbowRight.getPosition() );
+        //telemetry.addData("Outtake Elbow R Pos: ", OuttakeElbowRight.getPosition() );
         telemetry.addData("Outtake Elbow Down: ", OuttakeElbowDown );
         telemetry.addData("Intake Elbow Down: ", IntakeElbowDown );
 //        telemetry.addData("Intake Claw Open: ", IntakeClawOpen );
-        telemetry.addData("Right Slider: ", OuttakeSliderRight.getPower() );
+        //telemetry.addData("Right Slider: ", OuttakeSliderRight.getPower() );
         telemetry.addData("Left Slider: ", OuttakeSliderLeft.getPower() );
         telemetry.addData("Left Position: ", leftPosition );
         telemetry.addData("Right Position: ", rightPosition );
+        telemetry.addData("Red Value:", colorSensor.red() );
+        telemetry.addData("Blue Value:", colorSensor.blue() );
+        telemetry.addData("Green Value:", colorSensor.green() );
+        telemetry.addData("currentPos",currentPos);
+        //telemetry.addData("sofopesf",colorSensor.argb());
         /*telemetry.addData("intake Sensor red: ", IntakeSensor.red() );
         telemetry.addData("intake Sensor green: ", IntakeSensor.green() );
         telemetry.addData("intake Sensor blue: ", IntakeSensor.blue() );*/
@@ -475,15 +494,15 @@ public class AyCrush2P_PP extends OpMode {
     }
     public void outtakeSliders(int targetPosition, int velocity, int manual_override){
         // Set run modes for both motors
-        OuttakeSliderRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //OuttakeSliderRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         OuttakeSliderLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Synchronize motion
         if(manual_override == 0) {
-            OuttakeSliderRight.setTargetPosition(targetPosition + initialPositionRight);
+            //OuttakeSliderRight.setTargetPosition(targetPosition + initialPositionRight);
             OuttakeSliderLeft.setTargetPosition(targetPosition + initialPositionLeft);
         }else{
-            OuttakeSliderRight.setTargetPosition(targetPosition + OuttakeSliderRight.getCurrentPosition());
+            //OuttakeSliderRight.setTargetPosition(targetPosition + OuttakeSliderRight.getCurrentPosition());
             OuttakeSliderLeft.setTargetPosition(targetPosition + OuttakeSliderLeft.getCurrentPosition());
         }
         if(targetPosition < 10){
@@ -491,11 +510,11 @@ public class AyCrush2P_PP extends OpMode {
             slidersElapsedTime.reset();
         }
         //Run to target position
-        OuttakeSliderRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //OuttakeSliderRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         OuttakeSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         //Set power
-        OuttakeSliderRight.setPower(0.95);
+        //OuttakeSliderRight.setPower(0.95);
         OuttakeSliderLeft.setPower(1.0);
         // while(OuttakeSliderRight.isBusy() && OuttakeSliderLeft.isBusy()){
 
@@ -519,8 +538,8 @@ public class AyCrush2P_PP extends OpMode {
     }
     public void OuttakeSlidersResetInitialPosition(){
         initialPositionLeft = OuttakeSliderLeft.getCurrentPosition();
-        initialPositionRight = OuttakeSliderRight.getCurrentPosition();
-        OuttakeSliderRight.setPower(0.0);
+        //initialPositionRight = OuttakeSliderRight.getCurrentPosition();
+        //OuttakeSliderRight.setPower(0.0);
         OuttakeSliderLeft.setPower(0.0);
     }
     public void intakeSlidersElbow(IntakeState os){
@@ -531,15 +550,15 @@ public class AyCrush2P_PP extends OpMode {
                 IntakeSliderRight.setPosition(IntakeSliderPositionIN);
                 IntakeSliderLeft.setPosition(IntakeSliderPositionIN);
                 IntakeElbowRight.setPosition(IntakeElbowPositionIn);
-                IntakeElbowLeft.setPosition(IntakeElbowPositionIn);
-                IntakeWrist.setPosition(0.5);
+                //IntakeElbowLeft.setPosition(IntakeElbowPositionIn);
+                //IntakeWrist.setPosition(0.5);
 
                 break;
             case OUT:
                 IntakeSliderRight.setPosition(IntakeSliderPositionOut);
                 IntakeSliderLeft.setPosition(IntakeSliderPositionOut);
                 IntakeElbowRight.setPosition(IntakeElbowPositionOut);
-                IntakeElbowLeft.setPosition(IntakeElbowPositionOut);
+                //IntakeElbowLeft.setPosition(IntakeElbowPositionOut);
                 IntakeClaw.setPosition(IntakeClawPositionOpen);
 
                 break;
@@ -553,7 +572,7 @@ public class AyCrush2P_PP extends OpMode {
 
     }
     private void OuttakeElbowMove(double OuttakeElbowTargetPosition){
-        OuttakeElbowRight.setPosition(OuttakeElbowTargetPosition);
+        //OuttakeElbowRight.setPosition(OuttakeElbowTargetPosition);
         OuttakeElbowLeft.setPosition(OuttakeElbowTargetPosition);
     }
 

@@ -1,6 +1,4 @@
 package pedroPathing.Autonomous;
-import static android.os.SystemClock.elapsedRealtime;
-import static android.os.SystemClock.sleep;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.follower.Follower;
@@ -33,39 +31,48 @@ import pedroPathing.constants.LConstants;
  * @version 2.0, 11/28/2024
  */
 @Config
-@Autonomous(name = "Test", group = "Auto")
-public class nms extends OpMode {
+@Autonomous(name = "Test2", group = "Auto")
+public class nms2 extends OpMode {
 
+    private DcMotorEx OuttakeSliderRight;
     private DcMotorEx OuttakeSliderLeft;
+    private Servo IntakeElbowRight;
+    private Servo IntakeElbowLeft;
+    private Servo IntakeWrist;
+    private Servo OuttakeElbowRight;
     private Servo OuttakeElbowLeft;
     private Servo OuttakeClaw;
+    private Servo IntakeClaw;
     final int HIGH_BASKET = 3600;
-    final int HIGH_CHAMBER = 600;
+    final int HIGH_CHAMBER = 700;
     public int initialPositionLeft, initialPositionRight;
 
     final double OuttakeElbowPositionOut = 0.17;
     final double OuttakeElbowPositionSpecimenScoring = 0.30;
-    final double OuttakeElbowPositionIn = 0.72;
+    final double OuttakeElbowPositionIn = 0.85;
     final double OuttakeElbowPositionMiddle = 0.48;
     final double OuttakeClawPositionClose = 1.0;
     final double OuttakeClawPositionOpen = 0.00;
+    final double IntakeElbowPositionIn = 0.85;
+    final double IntakeElbowPositionOut = 0.23;
+    final double IntakeElbowPositionGrab = 0.2;
 
     private Servo IntakeSliderRight;
     private Servo IntakeSliderLeft;
-
-    public PathChain getRecoger1() {
-        return recogerFromScore;
-    }
 
     private enum IntakeState{
         IN,
         OUT
     }
-    final double IntakeSliderPositionOUT = 0.60;
-    final double IntakeSliderPositionIN = 0.0;
+    final double IntakeSliderPositionOUT = 0.57;
+    final double IntakeSliderPositionIN = 0.45;
+    final double IntakeSliderPositionTransfer = 0.21;
+    final double IntakeClawPositionClose = 0.60;
+    final double IntakeClawPositionOpen = 0.35;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int initialPos;
+    public static double IntakeWristRight = 0.2;
 
     /** This is the variable where we store the state of our auto.
      * It is used by the pathUpdate method. */
@@ -81,33 +88,26 @@ public class nms extends OpMode {
      * Lets assume the Robot is facing the human player and we want to score in the bucket */
 
     /** Start Pose of our robot */
-    private final Pose startPose = new Pose(9, 62, Math.toRadians(0));
+    private final Pose startPose = new Pose(8, 112, Math.toRadians(270));
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    public static double scorePoseX = 37.0;
-    public static double scorePoseY = 62.0;
-    private final Pose scorePose = new Pose(scorePoseX, scorePoseY, Math.toRadians(0));
-    public static double scoreToSampleX = 28.0;
-    public static double scoreToSampleY = 36.0;
-    private final Pose scoreToSample = new Pose(scoreToSampleX,scoreToSampleY,Math.toRadians(180));
-    public static double backX = 28.0;
-    public static double backY = 62.0;
-    private final Pose back = new Pose(backX,backY,Math.toRadians(0));
-
+    public static double scorePoseX = 19.0;
+    public static double scorePoseY = 125.0;
+    private final Pose highBasketPose = new Pose(scorePoseX, scorePoseY, Math.toRadians(315));
+    public static double hbControlX = 27.0;
+    public static double hbControlY = 118.0;
+    private final Pose controlHighBasketPose = new Pose (hbControlX,hbControlY, Math.toRadians(0));
     /** Lowest (First) Sample from the Spike Mark */
-    public static double samplePos1X = 57.0;
-    public static double samplepos1Y = 36.0;
+    public static double samplePos1X = 26.25;
+    public static double samplepos1Y = 122;
     private final Pose samplepos1 = new Pose(samplePos1X, samplepos1Y, Math.toRadians(0));
     private final Pose controlsamplepos1 = new Pose(80, 36, Math.toRadians(0));
-    public static double samplePos12X = 57.0;
-    public static double samplepos12Y = 27.0;
-    private final Pose controlsamplepos12 = new Pose(samplePos12X, samplepos12Y, Math.toRadians(0));
-    private final Pose samplepush1 = new Pose(samplepush1X, samplepush1Y, Math.toRadians(0));
-    public static double samplepush1X = 20.0;
-    public static double samplepush1Y = 27.0;
+    public static double samplePos3X = 44.7;
+    public static double samplepos3Y = 123.2;
+    private final Pose samplepos3 = new Pose(samplePos3X, samplepos3Y, Math.toRadians(90));
     private final Pose samplepos2 = new Pose(samplePos2X, samplepos2Y, Math.toRadians(0));
-    public static double samplePos2X = 57.0;
-    public static double samplepos2Y = 17.0;
+    public static double samplePos2X = 26.25;
+    public static double samplepos2Y = 130.2;
     private final Pose controlsamplepos2 = new Pose(75, 26, Math.toRadians(0));
 
     /** Middle (Second) Sample from the Spike Mark */
@@ -128,12 +128,15 @@ public class nms extends OpMode {
 
     /* These are our Paths and PathChains that we will define in buildPaths() */
     private Path scorePreload, park;
-    private PathChain sample1, sample2push,sample2push2, samplepushUno, sample2, samplepushDos, recoger, prono, recogerFromScore, score;
+    private PathChain sample1, sample1Score, sample2, sample2Score, sample3, sample3Score;
     private boolean range;
     public void sliderMove (int Position){
         OuttakeSliderLeft.setTargetPosition(initialPositionLeft + Position);
+        OuttakeSliderRight.setTargetPosition(initialPositionRight + Position);
         OuttakeSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        OuttakeSliderLeft.setPower(.4);
+        OuttakeSliderRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        OuttakeSliderLeft.setPower(.68);
+        OuttakeSliderRight.setPower(.7);
         /*while (OuttakeSliderLeft.isBusy() && OuttakeSliderRight.isBusy()){
 
         }
@@ -144,6 +147,7 @@ public class nms extends OpMode {
 
     public void outtakeElbow (double SPosition){
         OuttakeElbowLeft.setPosition(SPosition);
+        OuttakeElbowRight.setPosition(SPosition);
     }
     public void rangeXY (int X,int Y) {
         range = false;
@@ -176,67 +180,36 @@ public class nms extends OpMode {
          * Here is a explanation of the difference between Paths and PathChains <https://pedropathing.com/commonissues/pathtopathchain.html> */
 
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
-        scorePreload = new Path(new BezierLine(new Point(startPose), new Point(scorePose)));
-        scorePreload.setConstantHeadingInterpolation(startPose.getHeading());
-
-
+        scorePreload = new Path(new BezierCurve(new Point(startPose), new Point(controlHighBasketPose), new Point(highBasketPose)));
+        scorePreload.setLinearHeadingInterpolation(startPose.getHeading(),highBasketPose.getHeading());
 
         /* Gets in Position to push the 1st Sample into the Observation Zone */
         sample1 = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(scorePose),new Point(controlsamplepos1), new Point(samplepos1)))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), samplepos1.getHeading())
+                .addPath(new BezierLine(new Point(highBasketPose),new Point(samplepos1)))
+                .setLinearHeadingInterpolation(highBasketPose.getHeading(), samplepos1.getHeading())
                 .build();
-        sample2push = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scorePose), new Point(back)))
-                .setConstantHeadingInterpolation(scorePose.getHeading())
-                .addPath(new BezierLine(new Point(back), new Point(scoreToSample)))
-                .setLinearHeadingInterpolation(scoreToSample.getHeading(), Math.toRadians(0))
-                .addPath(new BezierLine(new Point(scoreToSample), new Point(samplepos1)))
-                .setConstantHeadingInterpolation(samplepos1.getHeading())
+        sample1Score = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(samplepos1),new Point(highBasketPose)))
+                .setLinearHeadingInterpolation(samplepos1.getHeading(), highBasketPose.getHeading())
                 .build();
-        samplepushUno = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(samplepos1),new Point(controlsamplepos12)))
-                .setConstantHeadingInterpolation(controlsamplepos12.getHeading())
-                .addPath(new BezierLine(new Point(controlsamplepos12),new Point(samplepush1)))
-                .setConstantHeadingInterpolation(samplepush1.getHeading())
-                .build();
-
         /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         sample2 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(samplepush1), new Point(controlsamplepos12)))
-                .setConstantHeadingInterpolation(controlsamplepos12.getHeading())
-                .addPath(new BezierLine(new Point(controlsamplepos12),new Point(samplepos2)))
-                .setConstantHeadingInterpolation(samplepos2.getHeading())
+                .addPath(new BezierLine(new Point(highBasketPose),new Point(samplepos2)))
+                .setLinearHeadingInterpolation(highBasketPose.getHeading(), samplepos2.getHeading())
                 .build();
-
-        samplepushDos = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(samplepos2),new Point(samplepush2)))
-                .setConstantHeadingInterpolation(samplepush2.getHeading())
+        sample3 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(highBasketPose),new Point(samplepos3)))
+                .setLinearHeadingInterpolation(highBasketPose.getHeading(), samplepos3.getHeading())
+                .build();
+        sample3Score = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(samplepos3),new Point(highBasketPose)))
+                .setLinearHeadingInterpolation(samplepos3.getHeading(), highBasketPose.getHeading())
                 .build();
 
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-        recoger = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(samplepush2), new Point(pickup)))
-                .setConstantHeadingInterpolation(samplepush2.getHeading())
-                .build();
-        prono = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(pickup), new Point(pickup2)))
-                .setConstantHeadingInterpolation(samplepush2.getHeading())
-                .build();
-        recogerFromScore = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scorePose), new Point(pickup)))
-                .setConstantHeadingInterpolation(pickup.getHeading())
-                .build();
-        score = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(pickup2), new Point(scorePose)))
-                .setConstantHeadingInterpolation(scorePose.getHeading())
-                .build();
-
-
-
         /* This is our park path. We are using a BezierCurve with 3 points, which is a curved line that is curved based off of the control point */
-        park = new Path(new BezierCurve(new Point(scorePose), /* Control Point */ new Point(parkControlPose), new Point(parkPose)));
-        park.setLinearHeadingInterpolation(scorePose.getHeading(), parkPose.getHeading());
+        park = new Path(new BezierCurve(new Point(highBasketPose), /* Control Point */ new Point(parkControlPose), new Point(parkPose)));
+        park.setLinearHeadingInterpolation(highBasketPose.getHeading(), parkPose.getHeading());
     }
 
     /** This switch is called continuously and runs the pathing, at certain points, it triggers the action state.
@@ -245,179 +218,293 @@ public class nms extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-            ///Goes to Submersible
+            ///Aims High Basket
                 follower.followPath(scorePreload, true);
-                sliderMove(HIGH_CHAMBER);
+                sliderMove(HIGH_BASKET + 1);
+                IntakeClaw.setPosition(OuttakeClawPositionOpen);
                 setPathState(1);
                 break;
 
             case 1:
             ///Prepares Outtake Elbows for scoring
-                if (follower.getPose().getX() >= scorePoseX && follower.getPose().getY() >= scorePoseY && pathTimer.getElapsedTimeSeconds() >= 3) {
+                if (follower.getPose().getX() >= startPose.getX() && follower.getPose().getY() >= startPose.getY()) {
                     OuttakeElbowLeft.setPosition(OuttakeElbowPositionMiddle);
+                    OuttakeElbowRight.setPosition(OuttakeElbowPositionMiddle);
                     setPathState(2);
                 }
                 break;
             case 2:
-            ///Scores Preload
-                if (follower.getPose().getX() >= scorePoseX - 0.6 && follower.getPose().getY() >= scorePoseY - 0.6) {
+            ///Aims Preload with Elbow
+                if (pathTimer.getElapsedTimeSeconds() >= 2.0) {
                     OuttakeElbowLeft.setPosition(OuttakeElbowPositionOut);
+                    OuttakeElbowRight.setPosition(OuttakeElbowPositionOut);
                     setPathState(3);
                 }
                 break;
             case 3:
-            ///Resets everything to Init. Pos.
-                if (follower.getPose().getX() >= scorePoseX - 0.5 && follower.getPose().getY() >= scorePoseY - 0.5 && pathTimer.getElapsedTimeSeconds() >= 1) {
+            ///Scores Preload
+                if (pathTimer.getElapsedTimeSeconds() >= 0.5) {
                     OuttakeClaw.setPosition(OuttakeClawPositionOpen);
-                    outtakeElbow(OuttakeElbowPositionMiddle);
-                    sliderMove(0);
                     setPathState(4);
-                    pathTimer.resetTimer();
                 }
                 break;
             case 4:
             ///Moves towards 1st Sample
-                if (pathTimer.getElapsedTimeSeconds() >= 2) {
-                    follower.followPath(sample2push);
-                    setPathState(5);
-                    pathTimer.resetTimer();
+                if (pathTimer.getElapsedTimeSeconds() >= 0.25) {
+                    //follower.followPath(sample2push);
+                    outtakeElbow(OuttakeElbowPositionMiddle);
+                    sliderMove(0);
+                    follower.followPath(sample1);
+                    IntakeSliderLeft.setPosition(IntakeSliderPositionOUT);
+                    IntakeSliderRight.setPosition(IntakeSliderPositionOUT);
+                    IntakeClaw.setPosition(IntakeClawPositionOpen);
+                    setPathState(6);
                 }
                 break;
             case 5:
             ///Pushes 1st Sample
                 if (!follower.isBusy()) {
-                    follower.followPath(samplepushUno);
+                    IntakeSliderLeft.setPosition(IntakeSliderPositionOUT);
+                    IntakeSliderRight.setPosition(IntakeSliderPositionOUT);
+                    IntakeClaw.setPosition(IntakeClawPositionOpen);
+                    IntakeElbowLeft.setPosition(IntakeElbowPositionOut);
+                    IntakeElbowRight.setPosition(IntakeElbowPositionOut);
                     setPathState(6);
                 }
                 break;
             case 6:
             ///Moves Towards 2nd Sample
                 if (!follower.isBusy()) {
-                    follower.followPath(sample2);setPathState(7);
+                    IntakeElbowLeft.setPosition(IntakeElbowPositionOut);
+                    IntakeElbowRight.setPosition(IntakeElbowPositionOut);
+                    setPathState(7);
                 }
                 break;
             case 7:
             ///Pushes 2nd Sample
-                if (!follower.isBusy()) {
-                    follower.followPath(samplepushDos);
+                if (pathTimer.getElapsedTimeSeconds() >= 0.25) {
+                    IntakeElbowLeft.setPosition(IntakeElbowPositionGrab);
+                    IntakeElbowRight.setPosition(IntakeElbowPositionGrab);
+
                     setPathState(8);
                 }
                 break;
             case 8:
             ///Prepares to grab 1st Specimen
-                if (!follower.isBusy()) {
-                    follower.followPath(recoger);
-                    outtakeElbow(OuttakeElbowPositionOut);
+                if (pathTimer.getElapsedTimeSeconds() >= 0.5) {
+                    IntakeClaw.setPosition(IntakeClawPositionClose);
+                }
+                if (pathTimer.getElapsedTimeSeconds() >= 1) {
+                    IntakeElbowRight.setPosition(IntakeElbowPositionIn);
+                    IntakeElbowLeft.setPosition(IntakeElbowPositionIn);
+                    IntakeSliderLeft.setPosition(IntakeSliderPositionTransfer);
+                    IntakeSliderRight.setPosition(IntakeSliderPositionTransfer);
                     setPathState(9);
                 }
                 break;
             case 9:
             ///Lines up to 1st Specimen
-                if (!follower.isBusy()) {
-                    follower.followPath(prono);
+                if (pathTimer.getElapsedTimeSeconds()>=0.5) {
+                    OuttakeElbowLeft.setPosition(OuttakeElbowPositionIn);
+                    OuttakeElbowRight.setPosition(OuttakeElbowPositionIn);
                     setPathState(10);
                 }
                 break;
             case 10:
             ///Grabs 1st Specimen
-                if (!follower.isBusy()) {
-                    if (pathTimer.getElapsedTimeSeconds() >= 0.25) {
+                    if (pathTimer.getElapsedTimeSeconds() >= 0.5) {
                         OuttakeClaw.setPosition(OuttakeClawPositionClose);
                         setPathState(11);
                     }
-                }
+
                 break;
             case 11:
             ///Picks up Claw and Sliders
-                if (!follower.isBusy()) {
-                    if (pathTimer.getElapsedTimeSeconds() >= 0.5) {
-                        sliderMove(HIGH_CHAMBER);
-                        outtakeElbow(OuttakeElbowPositionMiddle);
-                        setPathState(12);
+                if (pathTimer.getElapsedTimeSeconds() >= .5) {
+                    IntakeClaw.setPosition(IntakeClawPositionOpen);
+                    follower.followPath(sample1Score, true);
+                    sliderMove(HIGH_BASKET);
+                    setPathState(12);
                     }
-                }
                 break;
             case 12:
             ///Goes to Score 1st Specimen
                 if (!follower.isBusy()) {
-                    follower.followPath(score, true);
+                    //follower.followPath(score, true);
                     setPathState(13);
                 }
                 break;
             case 13:
             ///Scores 1st Specimen
-                if (follower.getPose().getX() >= scorePoseX - 0.6 && follower.getPose().getY() >= scorePoseY - 0.6) {
+                if (pathTimer.getElapsedTimeSeconds() >= 1.5) {
                     OuttakeElbowLeft.setPosition(OuttakeElbowPositionOut);
+                    OuttakeElbowRight.setPosition(OuttakeElbowPositionOut);
                     setPathState(14);
                     pathTimer.resetTimer();
                 }
                 break;
                 case 14:
-                    if (follower.getPose().getX() >= scorePoseX - 0.5 && follower.getPose().getY() >= scorePoseY - 0.5 && pathTimer.getElapsedTimeSeconds() >= 1) {
+                    if (pathTimer.getElapsedTimeSeconds() >= 0.5){
                         OuttakeClaw.setPosition(OuttakeClawPositionOpen);
+                    }
+                    if (follower.getPose().getX() >= scorePoseX - 0.5 && follower.getPose().getY() >= scorePoseY - 0.5 || pathTimer.getElapsedTimeSeconds() >= 1) {
                         outtakeElbow(OuttakeElbowPositionMiddle);
                         sliderMove(0);
                         setPathState(15);
-                        pathTimer.resetTimer();
                     }
                     break;
                 case 15:
                     if (!follower.isBusy()){
-                        follower.followPath(recogerFromScore,true);
-                        outtakeElbow(OuttakeElbowPositionOut);
+                        //follower.followPath(recogerFromScore,true);
+                        follower.followPath(sample2);
                         setPathState(16);
                     }
                     break;
                 case 16:
                 ///Lines up for 2rd Specimen
                     if (!follower.isBusy()) {
-                        follower.followPath(prono);
+                        IntakeSliderLeft.setPosition(IntakeSliderPositionOUT);
+                        IntakeSliderRight.setPosition(IntakeSliderPositionOUT);
+                        IntakeClaw.setPosition(IntakeClawPositionOpen);
+                        IntakeElbowLeft.setPosition(IntakeElbowPositionOut);
+                        IntakeElbowRight.setPosition(IntakeElbowPositionOut);
                         setPathState(17);
-                        pathTimer.resetTimer();
                         }
                     break;
                 case 17:
                 ///Grabs 2rd Specimen
-                    if (!follower.isBusy()) {
-                        if (pathTimer.getElapsedTimeSeconds() >= 0.25) {
-                            OuttakeClaw.setPosition(OuttakeClawPositionClose);
-                            setPathState(18);
-                        }
+                    if (pathTimer.getElapsedTimeSeconds() >= 0.5) {
+                        IntakeElbowLeft.setPosition(IntakeElbowPositionGrab);
+                        IntakeElbowRight.setPosition(IntakeElbowPositionGrab);
+                        setPathState(18);
                     }
                     break;
                 case 18:
-                    if (!follower.isBusy()) {
-                        if (pathTimer.getElapsedTimeSeconds() >= 0.5) {
-                            sliderMove(HIGH_CHAMBER);
-                            outtakeElbow(OuttakeElbowPositionMiddle);
-                            setPathState(19);
-                            follower.followPath(score);
-                        }
+                    if (pathTimer.getElapsedTimeSeconds() >= 0.5) {
+                        IntakeClaw.setPosition(IntakeClawPositionClose);
                     }
+                    if (pathTimer.getElapsedTimeSeconds() >= 1) {
+                        IntakeElbowRight.setPosition(IntakeElbowPositionIn);
+                        IntakeElbowLeft.setPosition(IntakeElbowPositionIn);
+                        IntakeSliderLeft.setPosition(IntakeSliderPositionTransfer);
+                        IntakeSliderRight.setPosition(IntakeSliderPositionTransfer);
+                        setPathState(19);
+                    }
+                    break;
                 case 19:
                 ///Scores 2nd Specimen
-                    if (follower.getPose().getX() >= scorePoseX - 0.6 && follower.getPose().getY() >= scorePoseY - 0.6) {
-                        OuttakeElbowLeft.setPosition(OuttakeElbowPositionOut);
+                    if (pathTimer.getElapsedTimeSeconds()>=0.5) {
+                        OuttakeElbowLeft.setPosition(OuttakeElbowPositionIn);
+                        OuttakeElbowRight.setPosition(OuttakeElbowPositionIn);
                         setPathState(20);
-                        pathTimer.resetTimer();
                     }
                     break;
                 case 20:
                 ///Resets
-                    if (follower.getPose().getX() >= scorePoseX - 0.5 && follower.getPose().getY() >= scorePoseY - 0.5 || pathTimer.getElapsedTimeSeconds() >= 1) {
-                        OuttakeClaw.setPosition(OuttakeClawPositionOpen);
-                        outtakeElbow(OuttakeElbowPositionMiddle);
-                        sliderMove(0);
+                    if (pathTimer.getElapsedTimeSeconds() >= 0.5) {
+                        OuttakeClaw.setPosition(OuttakeClawPositionClose);
                         setPathState(21);
-                        pathTimer.resetTimer();
                     }
                     break;
                 case 21:
                 ///Park
-                    if (!follower.isBusy()){
-                        follower.followPath(park);
-                        setPathState(-1);
+                    if (pathTimer.getElapsedTimeSeconds() >= .5) {
+                        IntakeClaw.setPosition(IntakeClawPositionOpen);
+                        follower.followPath(sample1Score, true);
+                        sliderMove(HIGH_BASKET);
+                        setPathState(22);
                     }
+                    break;
+            case 22:
+                if (pathTimer.getElapsedTimeSeconds() >= 1.75) {
+                    OuttakeElbowLeft.setPosition(OuttakeElbowPositionOut);
+                    OuttakeElbowRight.setPosition(OuttakeElbowPositionOut);
+                    setPathState(23);
+                }
+                break;
+            case 23:
+                if (pathTimer.getElapsedTimeSeconds() >= 0.5){
+                OuttakeClaw.setPosition(OuttakeClawPositionOpen);
+            }
+                if (pathTimer.getElapsedTimeSeconds() >= 1) {
+                    outtakeElbow(OuttakeElbowPositionMiddle);
+                    sliderMove(0);
+                    IntakeWrist.setPosition(IntakeWristRight);
+                    follower.followPath(sample3);
+                    setPathState(25);
+                }
+                break;
+            case 24:
+                if(!follower.isBusy()){
+                    setPathState(25);
+                }
+                break;
+            case 25:
+                if(!follower.isBusy()){
+                    IntakeSliderLeft.setPosition(IntakeSliderPositionOUT);
+                    IntakeSliderRight.setPosition(IntakeSliderPositionOUT);
+                    IntakeClaw.setPosition(IntakeClawPositionOpen);
+                    IntakeElbowLeft.setPosition(IntakeElbowPositionOut);
+                    IntakeElbowRight.setPosition(IntakeElbowPositionOut);
+                    setPathState(26);
+                }
+                break;
+
+            case 26:
+                if (pathTimer.getElapsedTimeSeconds() >= 0.75) {
+                    IntakeElbowLeft.setPosition(IntakeElbowPositionGrab);
+                    IntakeElbowRight.setPosition(IntakeElbowPositionGrab);
+                    IntakeClaw.setPosition(IntakeClawPositionClose);
+                }
+
+                    if (pathTimer.getElapsedTimeSeconds() >= 1.5) {
+                        IntakeWrist.setPosition(0.5);
+                        IntakeElbowRight.setPosition(IntakeElbowPositionIn);
+                        IntakeElbowLeft.setPosition(IntakeElbowPositionIn);
+                        IntakeSliderLeft.setPosition(IntakeSliderPositionTransfer);
+                        IntakeSliderRight.setPosition(IntakeSliderPositionTransfer);
+                        setPathState(27);
+                }
+                    break;
+            case 27:
+                if (pathTimer.getElapsedTimeSeconds()>=1) {
+                    OuttakeElbowLeft.setPosition(OuttakeElbowPositionIn);
+                    OuttakeElbowRight.setPosition(OuttakeElbowPositionIn);
+                    setPathState(28);
+                }
+                break;
+            case 28:
+                if (pathTimer.getElapsedTimeSeconds() >= 0.5) {
+                    OuttakeClaw.setPosition(OuttakeClawPositionClose);
+                    setPathState(29);
+                }
+                break;
+            case 29:
+                if (pathTimer.getElapsedTimeSeconds() >= .5) {
+                    IntakeClaw.setPosition(IntakeClawPositionOpen);
+                    follower.followPath(sample3Score, true);
+                    sliderMove(HIGH_BASKET);
+                    setPathState(30);
+                }
+                break;
+            case 30:
+                if (pathTimer.getElapsedTimeSeconds() >= 1.75) {
+                    OuttakeElbowLeft.setPosition(OuttakeElbowPositionOut);
+                    OuttakeElbowRight.setPosition(OuttakeElbowPositionOut);
+                    setPathState(31);
+                }
+                break;
+            case 31:
+                if (pathTimer.getElapsedTimeSeconds() >= 0.5){
+                    OuttakeClaw.setPosition(OuttakeClawPositionOpen);
+                }
+                if (pathTimer.getElapsedTimeSeconds() >= 1) {
+                    outtakeElbow(OuttakeElbowPositionMiddle);
+                    sliderMove(0);
+                    IntakeWrist.setPosition(IntakeWristRight);
+                    //follower.followPath(park);
+                    setPathState(-1);
+                }
 
         }
     }
@@ -445,6 +532,7 @@ public class nms extends OpMode {
         telemetry.addData("heading", follower.getPose().getHeading());
         telemetry.addData("Range",range);
         telemetry.addData("OuttakeLeft",OuttakeElbowLeft.getPosition());
+        telemetry.addData("OuttakeRight",OuttakeElbowRight.getPosition());
         telemetry.addData("Path Time",pathTimer.getElapsedTimeSeconds());
         telemetry.update();
     }
@@ -461,35 +549,55 @@ public class nms extends OpMode {
         // Sliders Mapping and Setup
 
 
+        OuttakeSliderRight = hardwareMap.get(DcMotorEx.class, "OuttakeSliderRight");
         OuttakeSliderLeft = hardwareMap.get(DcMotorEx.class, "OuttakeSliderLeft");
 
+        OuttakeSliderRight.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         OuttakeSliderLeft.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
+        OuttakeSliderRight.setDirection(DcMotorSimple.Direction.FORWARD);
         OuttakeSliderLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
         initialPositionLeft = OuttakeSliderLeft.getCurrentPosition();
+        initialPositionRight = OuttakeSliderRight.getCurrentPosition();
         Crush.getInstance().setInitialPositions(initialPositionRight, initialPositionLeft);
 
         //Servo Claw, Elbow, and Wrist Mapping and Setup
         OuttakeClaw = hardwareMap.get(Servo.class, "OuttakeClaw");
+        OuttakeElbowRight = hardwareMap.get(Servo.class, "OuttakeElbowRight");
         OuttakeElbowLeft = hardwareMap.get(Servo.class, "OuttakeElbowLeft");
         //OuttakeWrist = hardwareMap.get(Servo.class, "OuttakeWrist");
 
         OuttakeClaw.setDirection(Servo.Direction.FORWARD);
+        OuttakeElbowRight.setDirection(Servo.Direction.FORWARD);
         OuttakeElbowLeft.setDirection(Servo.Direction.REVERSE);
 
         //Intake
         //Servo Sliders Mapping and Setup
+
+
+
         IntakeSliderRight = hardwareMap.get(Servo.class, "IntakeSliderRight");
         IntakeSliderLeft = hardwareMap.get(Servo.class, "IntakeSliderLeft");
+        IntakeClaw = hardwareMap.get(Servo.class, "IntakeClaw");
+
+        IntakeElbowRight = hardwareMap.get(Servo.class, "IntakeElbowRight");
+        IntakeElbowLeft = hardwareMap.get(Servo.class, "IntakeElbowLeft");
+        IntakeWrist = hardwareMap.get(Servo.class, "IntakeWrist");
+
+
+        IntakeElbowRight.setDirection(Servo.Direction.FORWARD);
+        IntakeElbowLeft.setDirection(Servo.Direction.REVERSE);
 
         IntakeSliderRight.setDirection(Servo.Direction.FORWARD);
         IntakeSliderLeft.setDirection(Servo.Direction.REVERSE);
+        IntakeSliderLeft.scaleRange(0.0, 1.0);
+        IntakeSliderRight.scaleRange(0.0, 1.0);
 
         OuttakeClaw.setPosition(OuttakeClawPositionClose);
-        IntakeSliderLeft.setPosition(IntakeSliderPositionIN);
-        IntakeSliderRight.setPosition(IntakeSliderPositionIN);
-
+        IntakeSliderLeft.setPosition(0);
+        IntakeSliderRight.setPosition(0);
+        IntakeWrist.setPosition(0.5);
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
@@ -529,7 +637,7 @@ public class nms extends OpMode {
     }
 
     public PathChain getRecoger() {
-        return recoger;
+        return sample3;
     }
 }
 
