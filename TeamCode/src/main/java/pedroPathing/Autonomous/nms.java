@@ -39,16 +39,16 @@ public class nms extends OpMode {
     private DcMotorEx OuttakeSliderLeft;
     private Servo OuttakeElbowLeft;
     private Servo OuttakeClaw;
-    final int HIGH_BASKET = 3600;
-    final int HIGH_CHAMBER = 600;
+    final int HIGH_BASKET = 600;
+    final int HIGH_CHAMBER = 2000;
     public int initialPositionLeft, initialPositionRight;
 
-    final double OuttakeElbowPositionOut = 0.17;
+    final double OuttakeElbowPositionOut = 0.;
     final double OuttakeElbowPositionSpecimenScoring = 0.30;
     final double OuttakeElbowPositionIn = 0.72;
     final double OuttakeElbowPositionMiddle = 0.48;
-    final double OuttakeClawPositionClose = 1.0;
-    final double OuttakeClawPositionOpen = 0.00;
+    final double OuttakeClawPositionOpen = 1.0;
+    final double OuttakeClawPositionClose = 0.00;
 
     private Servo IntakeSliderRight;
     private Servo IntakeSliderLeft;
@@ -84,7 +84,7 @@ public class nms extends OpMode {
     private final Pose startPose = new Pose(9, 62, Math.toRadians(0));
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    public static double scorePoseX = 37.0;
+    public static double scorePoseX = 39.0;
     public static double scorePoseY = 62.0;
     private final Pose scorePose = new Pose(scorePoseX, scorePoseY, Math.toRadians(0));
     public static double scoreToSampleX = 28.0;
@@ -133,7 +133,7 @@ public class nms extends OpMode {
     public void sliderMove (int Position){
         OuttakeSliderLeft.setTargetPosition(initialPositionLeft + Position);
         OuttakeSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        OuttakeSliderLeft.setPower(.4);
+        OuttakeSliderLeft.setPower(1.0);
         /*while (OuttakeSliderLeft.isBusy() && OuttakeSliderRight.isBusy()){
 
         }
@@ -248,13 +248,14 @@ public class nms extends OpMode {
             ///Goes to Submersible
                 follower.followPath(scorePreload, true);
                 sliderMove(HIGH_CHAMBER);
+                outtakeElbow(OuttakeElbowPositionMiddle);
                 setPathState(1);
                 break;
 
             case 1:
             ///Prepares Outtake Elbows for scoring
-                if (follower.getPose().getX() >= scorePoseX && follower.getPose().getY() >= scorePoseY && pathTimer.getElapsedTimeSeconds() >= 3) {
-                    OuttakeElbowLeft.setPosition(OuttakeElbowPositionMiddle);
+                if (follower.getPose().getX() >= scorePoseX && follower.getPose().getY() >= scorePoseY) {
+                    outtakeElbow(OuttakeElbowPositionMiddle);
                     setPathState(2);
                 }
                 break;
@@ -267,7 +268,7 @@ public class nms extends OpMode {
                 break;
             case 3:
             ///Resets everything to Init. Pos.
-                if (follower.getPose().getX() >= scorePoseX - 0.5 && follower.getPose().getY() >= scorePoseY - 0.5 && pathTimer.getElapsedTimeSeconds() >= 1) {
+                if (pathTimer.getElapsedTimeSeconds() >= 1) {
                     OuttakeClaw.setPosition(OuttakeClawPositionOpen);
                     outtakeElbow(OuttakeElbowPositionMiddle);
                     sliderMove(0);
@@ -530,6 +531,10 @@ public class nms extends OpMode {
 
     public PathChain getRecoger() {
         return recoger;
+    }
+    private void OuttakeElbowMove(double OuttakeElbowTargetPosition){
+        //OuttakeElbowRight.setPosition(OuttakeElbowTargetPosition);
+        OuttakeElbowLeft.setPosition(OuttakeElbowTargetPosition);
     }
 }
 

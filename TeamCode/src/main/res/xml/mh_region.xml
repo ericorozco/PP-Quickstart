@@ -2,13 +2,14 @@
 <Robot type="FirstInspires-FTC">
     <LynxUsbDevice name="Control Hub Portal" serialNumber="(embedded)" parentModuleAddress="173">
         <LynxModule name="Expansion Hub 2" port="2">
-            -<goBILDA5202SeriesMotor name="leftFront" port="2" />
+            <goBILDA5202SeriesMotor name="leftFront" port="2" />
             <goBILDA5202SeriesMotor name="leftRear" port="1" />
             <goBILDA5202SeriesMotor name="OuttakeSliderLeft" port="3" />
             <goBILDA5202SeriesMotor name="LeftHanger" port="0" />
+            <Servo name="IntakeElbowLeft" port="4" />
 <!--            <Motor name="perp" port="3" />-->
             <Servo name="OuttakeElbowLeft" port="2" />
-            <Servo name="LeftIntakeStar" port="0" />
+            <ContinuousRotationServo name="LeftIntakeStar" port="0" />
 <!--
             <Servo name="IntakeElbowLeft" port="" />
 -->
@@ -28,7 +29,7 @@
             <Servo name="IntakeClaw" port="2" />
             <Servo name="IntakeSliderRight" port="3" />
             <Servo name="IntakeElbowRight" port="4" />
-            <Servo name="RightIntakeStar" port="5" />
+            <ContinuousRotationServo name="RightIntakeStar" port="5" />
             <ControlHubImuBHI260AP name="imu" port="0" bus="0" />
         </LynxModule>
     </LynxUsbDevice>
