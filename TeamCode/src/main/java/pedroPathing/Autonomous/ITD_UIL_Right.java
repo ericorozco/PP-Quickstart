@@ -1,6 +1,4 @@
 package pedroPathing.Autonomous;
-import static android.os.SystemClock.elapsedRealtime;
-import static android.os.SystemClock.sleep;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.follower.Follower;
@@ -19,7 +17,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import pedroPathing.Crush;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
@@ -33,11 +30,12 @@ import pedroPathing.constants.LConstants;
  * @version 2.0, 11/28/2024
  */
 @Config
-@Autonomous(name = "Test", group = "Auto")
-public class nms extends OpMode {
+@Autonomous(name = "ITD-UIL-Right", group = "Auto")
+public class ITD_UIL_Right extends OpMode {
 
     private DcMotorEx OuttakeSliderLeft;
-    private Servo OuttakeElbowLeft;
+    private Servo OuttakeElbowRight;
+    private Servo OuttakeWrist;
     private Servo OuttakeClaw;
     final int HIGH_BASKET = 600;
     final int HIGH_CHAMBER = 2000;
@@ -143,7 +141,7 @@ public class nms extends OpMode {
 
 
     public void outtakeElbow (double SPosition){
-        OuttakeElbowLeft.setPosition(SPosition);
+        OuttakeWrist.setPosition(SPosition);
     }
     public void rangeXY (int X,int Y) {
         range = false;
@@ -262,8 +260,8 @@ public class nms extends OpMode {
             case 2:
             ///Scores Preload
                 if (follower.getPose().getX() >= scorePoseX - 0.6 && follower.getPose().getY() >= scorePoseY - 0.6) {
-                    OuttakeElbowLeft.setPosition(OuttakeElbowPositionOut);
-                    setPathState(3);
+                    OuttakeWrist.setPosition(OuttakeElbowPositionOut);
+                    setPathState(-1);
                 }
                 break;
             case 3:
@@ -348,7 +346,7 @@ public class nms extends OpMode {
             case 13:
             ///Scores 1st Specimen
                 if (follower.getPose().getX() >= scorePoseX - 0.6 && follower.getPose().getY() >= scorePoseY - 0.6) {
-                    OuttakeElbowLeft.setPosition(OuttakeElbowPositionOut);
+                    OuttakeWrist.setPosition(OuttakeElbowPositionOut);
                     setPathState(14);
                     pathTimer.resetTimer();
                 }
@@ -398,7 +396,7 @@ public class nms extends OpMode {
                 case 19:
                 ///Scores 2nd Specimen
                     if (follower.getPose().getX() >= scorePoseX - 0.6 && follower.getPose().getY() >= scorePoseY - 0.6) {
-                        OuttakeElbowLeft.setPosition(OuttakeElbowPositionOut);
+                        OuttakeWrist.setPosition(OuttakeElbowPositionOut);
                         setPathState(20);
                         pathTimer.resetTimer();
                     }
@@ -445,7 +443,8 @@ public class nms extends OpMode {
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
         telemetry.addData("Range",range);
-        telemetry.addData("OuttakeLeft",OuttakeElbowLeft.getPosition());
+        telemetry.addData("OuttakeLeft",OuttakeWrist.getPosition());
+        telemetry.addData("InitPos",initialPositionLeft);
         telemetry.addData("Path Time",pathTimer.getElapsedTimeSeconds());
         telemetry.update();
     }
@@ -469,15 +468,16 @@ public class nms extends OpMode {
         OuttakeSliderLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
         initialPositionLeft = OuttakeSliderLeft.getCurrentPosition();
-        Crush.getInstance().setInitialPositions(initialPositionRight, initialPositionLeft);
+        //Crush.getInstance().setInitialPositions(initialPositionRight, initialPositionLeft);
 
         //Servo Claw, Elbow, and Wrist Mapping and Setup
         OuttakeClaw = hardwareMap.get(Servo.class, "OuttakeClaw");
-        OuttakeElbowLeft = hardwareMap.get(Servo.class, "OuttakeElbowLeft");
+        OuttakeWrist = hardwareMap.get(Servo.class, "OuttakeWrist");
+        OuttakeElbowRight = hardwareMap.get(Servo.class, "OuttakeElbowRight");
         //OuttakeWrist = hardwareMap.get(Servo.class, "OuttakeWrist");
 
         OuttakeClaw.setDirection(Servo.Direction.FORWARD);
-        OuttakeElbowLeft.setDirection(Servo.Direction.REVERSE);
+        OuttakeWrist.setDirection(Servo.Direction.REVERSE);
 
         //Intake
         //Servo Sliders Mapping and Setup
@@ -487,9 +487,12 @@ public class nms extends OpMode {
         IntakeSliderRight.setDirection(Servo.Direction.FORWARD);
         IntakeSliderLeft.setDirection(Servo.Direction.REVERSE);
 
-        OuttakeClaw.setPosition(OuttakeClawPositionClose);
+        OuttakeClaw.setPosition(0.0);
         IntakeSliderLeft.setPosition(IntakeSliderPositionIN);
         IntakeSliderRight.setPosition(IntakeSliderPositionIN);
+        OuttakeWrist.setPosition(0.5);
+        OuttakeElbowRight.setPosition(0.5);
+
 
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
@@ -534,7 +537,7 @@ public class nms extends OpMode {
     }
     private void OuttakeElbowMove(double OuttakeElbowTargetPosition){
         //OuttakeElbowRight.setPosition(OuttakeElbowTargetPosition);
-        OuttakeElbowLeft.setPosition(OuttakeElbowTargetPosition);
+        OuttakeWrist.setPosition(OuttakeElbowTargetPosition);
     }
 }
 

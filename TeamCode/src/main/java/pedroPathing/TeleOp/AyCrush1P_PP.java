@@ -9,17 +9,14 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pedroPathing.Autonomous.Right;
 import pedroPathing.Crush;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;

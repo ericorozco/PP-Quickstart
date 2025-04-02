@@ -2,34 +2,42 @@
 <Robot type="FirstInspires-FTC">
     <LynxUsbDevice name="Control Hub Portal" serialNumber="(embedded)" parentModuleAddress="173">
         <LynxModule name="Expansion Hub 2" port="2">
-            <goBILDA5202SeriesMotor name="leftFront" port="2" />
-            <goBILDA5202SeriesMotor name="leftRear" port="1" />
-            <goBILDA5202SeriesMotor name="OuttakeSliderLeft" port="3" />
+            <!--All Motors Expansion Hub -->
             <goBILDA5202SeriesMotor name="LeftHanger" port="0" />
-            <Servo name="IntakeElbowLeft" port="4" />
-<!--            <Motor name="perp" port="3" />-->
-            <Servo name="OuttakeElbowLeft" port="2" />
-            <ContinuousRotationServo name="LeftIntakeStar" port="0" />
+            <goBILDA5202SeriesMotor name="leftRear" port="1" />
+            <goBILDA5202SeriesMotor name="leftFront" port="2" />
+            <goBILDA5202SeriesMotor name="OuttakeSliderLeft" port="3" />
+
+            <!--All Servos Expansion Hub -->
+
+            <Servo name="OuttakeClaw" port="1" />
+            <Servo name="OuttakeElbowRight" port="2" />
+            <Servo name="IntakeSliderLeft" port="3" />
+            <Servo name="IntakeClaw" port="4" />
+            <Servo name="OuttakeWrist" port="5" />
+<!--            <ContinuousRotationServo name="LeftIntakeStar" port="0" />-->
 <!--
             <Servo name="IntakeElbowLeft" port="" />
 -->
-            <Servo name="IntakeSliderLeft" port="3" />
-            <Servo name="OuttakeClaw" port="1" />
+            <!-- Sensors Expansion Hub-->
            <goBILDAPinpoint name="pinpoint" port="0" bus="0" />
-            <RevColorSensorV3 name="colorSensor" port="0" bus="1"/>
+<!--            <RevColorSensorV3 name="colorSensor" port="0" bus="1"/>-->
 
         </LynxModule>
+
         <LynxModule name="Control Hub" port="173">
+            <!--All Motors Control Hub -->
             <goBILDA5202SeriesMotor name="rightFront" port="0" />
             <goBILDA5202SeriesMotor name="rightRear" port="1" />
             <goBILDA5202SeriesMotor name="RightHanger" port="2" />
-<!--
-            <Motor name="par" port="3" />
--->
-            <Servo name="IntakeClaw" port="2" />
+
+            <!--All Servos Control Hub -->
+
+<!--            <Servo name="IntakeClaw" port="2" />-->
             <Servo name="IntakeSliderRight" port="3" />
             <Servo name="IntakeElbowRight" port="4" />
-            <ContinuousRotationServo name="RightIntakeStar" port="5" />
+            <Servo name="IntakeWrist" port="5" />
+
             <ControlHubImuBHI260AP name="imu" port="0" bus="0" />
         </LynxModule>
     </LynxUsbDevice>

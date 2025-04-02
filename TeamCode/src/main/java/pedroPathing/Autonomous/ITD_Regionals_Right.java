@@ -33,12 +33,11 @@ import pedroPathing.constants.LConstants;
  */
 
 @Autonomous(name = "Right Regionals", group = "Auto")
-public class Right extends OpMode {
+public class ITD_Regionals_Right extends OpMode {
 
     private DcMotorEx OuttakeSliderRight;
     private DcMotorEx OuttakeSliderLeft;
     private Servo OuttakeElbowRight;
-    private Servo OuttakeElbowLeft;
     private Servo OuttakeClaw;
     final int HIGH_BASKET = 3600;
     final int HIGH_CHAMBER = 1000;
@@ -128,7 +127,6 @@ public class Right extends OpMode {
         OuttakeSliderRight.setPower(0);
     }
     public void outtakeElbow (int SPosition){
-        OuttakeElbowLeft.setPosition(SPosition);
         OuttakeElbowRight.setPosition(SPosition);
     }
 
@@ -358,12 +356,10 @@ public class Right extends OpMode {
         //Servo Claw, Elbow, and Wrist Mapping and Setup
         OuttakeClaw = hardwareMap.get(Servo.class, "OuttakeClaw");
         OuttakeElbowRight = hardwareMap.get(Servo.class, "OuttakeElbowRight");
-        OuttakeElbowLeft = hardwareMap.get(Servo.class, "OuttakeElbowLeft");
         //OuttakeWrist = hardwareMap.get(Servo.class, "OuttakeWrist");
 
         OuttakeClaw.setDirection(Servo.Direction.FORWARD);
         OuttakeElbowRight.setDirection(Servo.Direction.FORWARD);
-        OuttakeElbowLeft.setDirection(Servo.Direction.REVERSE);
 
         //Intake
         //Servo Sliders Mapping and Setup

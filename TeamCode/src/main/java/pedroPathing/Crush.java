@@ -15,14 +15,14 @@ public class Crush {
     }
 
     public void setInitialPositions(int right, int left) {
-        this.InitialPositionRightOuttakeSlider = right;
+//        this.InitialPositionRightOuttakeSlider = right;
         this.InitialPositionLeftOuttakeSlider = left;
         this.slidersInitialized = true; // Mark as initialized
     }
 
-    public int getRight() {
-        return InitialPositionRightOuttakeSlider;
-    }
+//    public int getRight() {
+//        return InitialPositionRightOuttakeSlider;
+//    }
 
     public int getLeft() {
         return InitialPositionLeftOuttakeSlider;
