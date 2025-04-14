@@ -168,7 +168,7 @@ public class AyCrush1P_PP extends OpMode {
         OuttakeSliderLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         if(Crush.getInstance().areSlidersInitialized()){
             initialPositionLeft = Crush.getInstance().getLeft();
-            initialPositionRight = Crush.getInstance().getRight();
+//            initialPositionRight = Crush.getInstance().getRight();
 
         }else{
             initialPositionLeft = OuttakeSliderLeft.getCurrentPosition();

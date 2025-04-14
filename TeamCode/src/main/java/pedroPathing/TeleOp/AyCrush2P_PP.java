@@ -590,7 +590,7 @@ public class AyCrush2P_PP extends OpMode {
                 IntakeSliderLeft.setPosition(IntakeSliderPositionIN);
                 IntakeElbowRight.setPosition(IntakeElbowPositionIn);
 //                IntakeElbowLeft.setPosition(IntakeElbowPositionIn);
-                IntakeWrist.setPosition(0.5);
+                IntakeWrist.setPosition(IntakeWristInitialPosition);
 
                 break;
             case OUT:
@@ -627,6 +627,11 @@ public class AyCrush2P_PP extends OpMode {
             color = 0; //other color
         }
         return color;
+    }
+    public void setSampleScoringState(SampleScoringState pState) {
+        sampleScoringState = pState;
+        transferTime.reset();
+
     }
 
 }
