@@ -10,14 +10,12 @@ import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
-import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.robot.Robot;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
@@ -32,8 +30,8 @@ import pedroPathing.constants.LConstants;
  * @version 2.0, 11/28/2024
  */
 @Config
-@Autonomous(name = "ITD-UIL-Right", group = "Auto")
-public class ITD_UIL_Right extends OpMode {
+@Autonomous(name = "ITD-UIL-Right2", group = "Auto")
+public class ITD_UIL_Right2 extends OpMode {
 
     private DcMotorEx OuttakeSliderLeft;
     private Servo OuttakeElbowRight;
@@ -92,29 +90,37 @@ public class ITD_UIL_Right extends OpMode {
     public static double scorePoseY = 65.0;
     private final Pose scorePose = new Pose(scorePoseX, scorePoseY, Math.toRadians(0));
     private final Pose scorePoseLast = new Pose(scorePoseX+10, scorePoseY+10, Math.toRadians(0));
-    public static double scoreToSampleX = 57.0;
-    public static double scoreToSampleY = 25.0;
+    public static double scoreToSampleX = 58.0;
+    public static double scoreToSampleY = 24.0;
     private final Pose scoreToSample = new Pose(scoreToSampleX,scoreToSampleY,Math.toRadians(0));
+    public static double Control1x = 16.0;
+    public static double Control1y = 17.0;
+    private final Pose score2sampleControl1 = new Pose(Control1x,Control1y,Math.toRadians(0));
     public static double backX = 28.0;
     public static double backY = 62.0;
     private final Pose back = new Pose(backX,backY,Math.toRadians(0));
+    private final Pose Control1 = new Pose(10,36,Math.toRadians(0));
+
+    public static double Control2x = 76.0;
+    public static double Control2y = 46.0;
+    private final Pose score2sampleControl2 = new Pose(Control2x,Control2y,Math.toRadians(0));
 
     /** Lowest (First) Sample from the Spike Mark */
     public static double samplePos1X = 57.0;
     public static double samplepos1Y = 38.0;
     private final Pose samplepos1 = new Pose(samplePos1X, samplepos1Y, Math.toRadians(0));
-    private final Pose Control1 = new Pose(10,36,Math.toRadians(0));
+    private final Pose Sample1to2Control1 = new Pose(74,33.4,Math.toRadians(0));
     private final Pose controlsamplepos1 = new Pose(80, 36, Math.toRadians(0));
     public static double samplePos12X = 57.0;
     public static double samplepos12Y = 31.0;
     private final Pose controlsamplepos12 = new Pose(samplePos12X, samplepos12Y, Math.toRadians(0));
     private final Pose samplepush1 = new Pose(samplepush1X, samplepush1Y, Math.toRadians(0));
-    public static double samplepush1X = 20.0;
-    public static double samplepush1Y = 31.0;
+    public static double samplepush1X = 10.0;
+    public static double samplepush1Y = 13.0;
     private final Pose samplepos2 = new Pose(samplePos2X, samplepos2Y, Math.toRadians(0));
-    public static double samplePos2X = 57.0;
-    public static double samplepos2Y = 17.0;
-    private final Pose controlsamplepos2 = new Pose(75, 26, Math.toRadians(0));
+    public static double samplePos2X = 39.0;
+    public static double samplepos2Y = 65.0;
+    private final Pose controlsamplepos2 = new Pose(20, 51, Math.toRadians(0));
 
     /** Middle (Second) Sample from the Spike Mark */
     private final Pose samplepush2 = new Pose(samplepush2X, samplepush2Y, Math.toRadians(0));
@@ -122,7 +128,7 @@ public class ITD_UIL_Right extends OpMode {
     public static double samplepush2Y = 17.0;
 
     /** Highest (Third) Sample from the Spike Mark */
-    private final Pose pickup = new Pose(27, 30, Math.toRadians(0));
+    private final Pose pickup = new Pose(10, 13, Math.toRadians(0));
     private final Pose pickup2 = new Pose(14, 30, Math.toRadians(0));
 
     /** Park Pose for our robot, after we do all of the scoring. */

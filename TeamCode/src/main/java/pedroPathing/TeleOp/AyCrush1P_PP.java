@@ -48,15 +48,11 @@ public class AyCrush1P_PP extends OpMode {
     private Servo OuttakeElbowLeft;
     private Servo OuttakeClaw;
     private Servo IntakeElbowRight;
-    private Servo IntakeElbowLeft;
-    private CRServo RightIntakeStar;
-    private CRServo LeftIntakeStar;
-    private ColorSensor colorSensor;
+
     public static int HIGH_BASKET = 4150;
     public static int HIGH_CHAMBER = 600;
     public static int initialPositionLeft, initialPositionRight;
 
-    private boolean IntakeElbowDown = false;
     private boolean OuttakeElbowDown = false;
     private boolean OuttakeClawOpen = false;
     private boolean IntakeClawOpen = true;
@@ -101,7 +97,6 @@ public class AyCrush1P_PP extends OpMode {
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
-        colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
 
 
         //Driving Motors Mapping and Setup
@@ -137,16 +132,11 @@ public class AyCrush1P_PP extends OpMode {
         //Servo Claw and Elbow Mapping and Setup
 //        IntakeClaw = hardwareMap.get(Servo.class, "IntakeClaw");
         //IntakeWrist = hardwareMap.get(Servo.class, "IntakeWrist");
-        RightIntakeStar = hardwareMap.get(CRServo.class, "RightIntakeStar");
-        LeftIntakeStar = hardwareMap.get(CRServo.class, "LeftIntakeStar");
         IntakeElbowRight = hardwareMap.get(Servo.class, "IntakeElbowRight");
-        IntakeElbowLeft = hardwareMap.get(Servo.class, "IntakeElbowLeft");
         //IntakeSensor = hardwareMap.get(ColorSensor.class, "IntakeSensor");
 
         IntakeElbowRight.setDirection(Servo.Direction.FORWARD);
         IntakeElbowRight.setDirection(Servo.Direction.REVERSE);
-        RightIntakeStar.setDirection(CRServo.Direction.FORWARD);
-        LeftIntakeStar.setDirection(CRServo.Direction.REVERSE);
 
         //IntakeClaw.scaleRange(0.0, 1.0);
         //IntakeElbowRight.scaleRange(0.0, 1.0);
@@ -168,7 +158,7 @@ public class AyCrush1P_PP extends OpMode {
         OuttakeSliderLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         if(Crush.getInstance().areSlidersInitialized()){
             initialPositionLeft = Crush.getInstance().getLeft();
-//            initialPositionRight = Crush.getInstance().getRight();
+            //initialPositionRight = Crush.getInstance().getRight();
 
         }else{
             initialPositionLeft = OuttakeSliderLeft.getCurrentPosition();
@@ -319,11 +309,11 @@ public class AyCrush1P_PP extends OpMode {
                 //Intake Elbow Down
                 //Intake stars start intake
                 //telemetry.update();
-                if(intaking && (getColor(colorSensor.red(), colorSensor.green(), colorSensor.blue())==1 || getColor(colorSensor.red(), colorSensor.green(), colorSensor.blue())==2) ){
+                /*if(intaking && (getColor(colorSensor.red(), colorSensor.green(), colorSensor.blue())==1 || getColor(colorSensor.red(), colorSensor.green(), colorSensor.blue())==2) ){
                     RightIntakeStar.setPower(0);
                     LeftIntakeStar.setPower(0);
                     intaking = false;
-                }
+                }*/
                 if(transferingStarted && transferET.seconds()>1){
                     OuttakeElbowLeft.setPosition(OuttakeElbowPositionIn);
                     if (transferET.seconds()>2){
@@ -360,7 +350,6 @@ public class AyCrush1P_PP extends OpMode {
                  }
 
                 if(gamepad1.square && intakeCurrentState==1){
-                    IntakeElbowLeft.setPosition(IntakeElbowPositionGrab);
                     IntakeElbowRight.setPosition(IntakeElbowPositionGrab);
 //                    IntakeClaw.setPosition(IntakeClawPositionClose);
                 }
@@ -493,18 +482,15 @@ public class AyCrush1P_PP extends OpMode {
         telemetry.addData("Outtake Elbow L Pos: ", OuttakeElbowLeft.getPosition() );
         //telemetry.addData("Outtake Elbow R Pos: ", OuttakeElbowRight.getPosition() );
         telemetry.addData("Outtake Elbow Down: ", OuttakeElbowDown );
-        telemetry.addData("Intake Elbow Down: ", IntakeElbowDown );
+        boolean intakeElbowDown = false;
+        telemetry.addData("Intake Elbow Down: ", intakeElbowDown);
 //        telemetry.addData("Intake Claw Open: ", IntakeClawOpen );
         //telemetry.addData("Right Slider: ", OuttakeSliderRight.getPower() );
         telemetry.addData("Left Slider: ", OuttakeSliderLeft.getPower() );
         telemetry.addData("Left Position: ", leftPosition );
         telemetry.addData("Right Position: ", rightPosition );
-        telemetry.addData("Red Value:", colorSensor.red() );
-        telemetry.addData("Blue Value:", colorSensor.blue() );
-        telemetry.addData("Green Value:", colorSensor.green() );
         telemetry.addData("Intaking:", intaking );
 
-        telemetry.addData("Color:", getColor(colorSensor.red(), colorSensor.green(), colorSensor.blue()));
         //telemetry.addData("sofopesf",colorSensor.argb());
         /*telemetry.addData("intake Sensor red: ", IntakeSensor.red() );
         telemetry.addData("intake Sensor green: ", IntakeSensor.green() );
@@ -570,11 +556,8 @@ public class AyCrush1P_PP extends OpMode {
         switch (os){
             case IN:
                 IntakeSliderRight.setPosition(IntakeSliderPositionIN);
-                IntakeSliderLeft.setPosition(IntakeSliderPositionIN);
                 IntakeElbowRight.setPosition(IntakeElbowPositionIn);
-                RightIntakeStar.setPower(0.0);
-                LeftIntakeStar.setPower(0.0);
-                IntakeElbowLeft.setPosition(IntakeElbowPositionIn);
+
                 //IntakeWrist.setPosition(0.5);
 
                 break;
@@ -582,9 +565,6 @@ public class AyCrush1P_PP extends OpMode {
                 IntakeSliderRight.setPosition(IntakeSliderPositionOut);
                 IntakeSliderLeft.setPosition(IntakeSliderPositionOut);
                 IntakeElbowRight.setPosition(IntakeElbowPositionOut);
-                RightIntakeStar.setPower(0.5);
-                LeftIntakeStar.setPower(0.5);
-                IntakeElbowLeft.setPosition(IntakeElbowPositionOut);
 //                IntakeClaw.setPosition(IntakeClawPositionOpen);
 
                 break;
@@ -602,18 +582,6 @@ public class AyCrush1P_PP extends OpMode {
         OuttakeElbowLeft.setPosition(OuttakeElbowTargetPosition);
     }
 
-    private int getColor(int r, int g, int b){
-        int color = 0;
-        if((r>2700 && r <3200) && (g>3500 && g<4200) && (b>500 && b<1200)){
-            color = 1; //Yellow
-        }else if((r>200 && r <500) && (g>400 && g<700) && (b>1000 && b<1500)){
-            color = 2; //Blue
-        }else if((r>2200 && r <2600) && (g>1000 && g<1500) && (b>500 && b<800)){
-            color = 3; //Red
-        }else{
-            color = 0; //other color
-        }
-        return color;
-    }
+
 
 }
