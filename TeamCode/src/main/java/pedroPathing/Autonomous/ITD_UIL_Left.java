@@ -572,7 +572,7 @@ public class ITD_UIL_Left extends OpMode {
         OuttakeSliderLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
         initialPositionLeft = OuttakeSliderLeft.getCurrentPosition();
-        Crush.getInstance().setInitialPositions(initialPositionRight, initialPositionLeft);
+        Crush.getInstance().setInitialPositions(initialPositionLeft);
 
         //Servo Claw, Elbow, and Wrist Mapping and Setup
         OuttakeClaw = hardwareMap.get(Servo.class, "OuttakeClaw");

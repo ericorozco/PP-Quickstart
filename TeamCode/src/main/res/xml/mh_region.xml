@@ -3,7 +3,7 @@
     <LynxUsbDevice name="Control Hub Portal" serialNumber="(embedded)" parentModuleAddress="173">
         <LynxModule name="Expansion Hub 2" port="2">
             <!--All Motors Expansion Hub -->
-            <goBILDA5202SeriesMotor name="LeftHanger" port="0" />
+            <goBILDA5202SeriesMotor name="leftHanger" port="0" />
             <goBILDA5202SeriesMotor name="leftRear" port="1" />
             <goBILDA5202SeriesMotor name="leftFront" port="2" />
             <goBILDA5202SeriesMotor name="OuttakeSliderLeft" port="3" />
@@ -29,11 +29,12 @@
             <!--All Motors Control Hub -->
             <goBILDA5202SeriesMotor name="rightFront" port="0" />
             <goBILDA5202SeriesMotor name="rightRear" port="1" />
-            <goBILDA5202SeriesMotor name="RightHanger" port="2" />
+            <goBILDA5202SeriesMotor name="rightHanger" port="2" />
 
             <!--All Servos Control Hub -->
 
 <!--            <Servo name="IntakeClaw" port="2" />-->
+            <Servo name="block" port="0" />
             <Servo name="IntakeSliderRight" port="3" />
             <Servo name="IntakeElbowRight" port="4" />
             <Servo name="IntakeWrist" port="5" />

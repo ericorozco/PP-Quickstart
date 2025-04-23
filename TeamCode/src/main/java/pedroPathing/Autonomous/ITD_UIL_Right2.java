@@ -41,18 +41,27 @@ public class ITD_UIL_Right2 extends OpMode {
     final int HIGH_CHAMBER = 2200;
     public int initialPositionLeft, initialPositionRight;
 
-    final double OuttakeElbowPositionOut = 0.;
-    final double OuttakeElbowPositionSpecimenScoring = 0.30;
-    final double OuttakeElbowPositionIn = 0.72;
+    final double OuttakeElbowPositionOut = 0.25;
+    final double OuttakeElbowPositionSpecimenScoring = 0.25;
+    final double OuttakeElbowPositionSpecimenAiming = 0.75;
     final double OuttakeElbowPositionMiddle = 0.48;
     final double OuttakeClawPositionClose = 0.35;
     final double OuttakeClawPositionOpen = 0.70;
+
+    final double OuttakeWristPositionScoring = 0.75;
+    final double OuttakeWristPositionScorePreload = 1.0;
+    final double OuttakeWristPositionOut = 0.5;
+    final double OuttakeWristPositionAfterScore = 0.6;
+
+    final double OuttakeWristPositionGrab = 1.0;
+    final double OuttakeWristPositionSpecimenAiming = 0.45;
 
     private Servo IntakeSliderRight;
     private Servo IntakeSliderLeft;
     private Servo IntakeWrist;
     final double IntakeWristInitialPosition = 0.5;
     private Servo IntakeElbowRight;
+    private Servo block;
 
 
     public PathChain getRecoger1() {
@@ -106,8 +115,8 @@ public class ITD_UIL_Right2 extends OpMode {
     private final Pose score2sampleControl2 = new Pose(Control2x,Control2y,Math.toRadians(0));
 
     /** Lowest (First) Sample from the Spike Mark */
-    public static double samplePos1X = 57.0;
-    public static double samplepos1Y = 38.0;
+    public static double samplePos1X = 58.0;
+    public static double samplepos1Y = 25.0;
     private final Pose samplepos1 = new Pose(samplePos1X, samplepos1Y, Math.toRadians(0));
     private final Pose Sample1to2Control1 = new Pose(74,33.4,Math.toRadians(0));
     private final Pose controlsamplepos1 = new Pose(80, 36, Math.toRadians(0));
@@ -115,21 +124,32 @@ public class ITD_UIL_Right2 extends OpMode {
     public static double samplepos12Y = 31.0;
     private final Pose controlsamplepos12 = new Pose(samplePos12X, samplepos12Y, Math.toRadians(0));
     private final Pose samplepush1 = new Pose(samplepush1X, samplepush1Y, Math.toRadians(0));
-    public static double samplepush1X = 10.0;
-    public static double samplepush1Y = 13.0;
+    public static double samplepush1X = 16.0;
+    public static double samplepush1Y = 24.0;
     private final Pose samplepos2 = new Pose(samplePos2X, samplepos2Y, Math.toRadians(0));
-    public static double samplePos2X = 39.0;
-    public static double samplepos2Y = 65.0;
+    public static double samplePos2X = 52.0;
+    public static double samplepos2Y = 13.0;
     private final Pose controlsamplepos2 = new Pose(20, 51, Math.toRadians(0));
 
     /** Middle (Second) Sample from the Spike Mark */
+    public static double samplepush2X = 25.0;
+    public static double samplepush2Y = 13.0;
     private final Pose samplepush2 = new Pose(samplepush2X, samplepush2Y, Math.toRadians(0));
-    public static double samplepush2X = 19.0;
-    public static double samplepush2Y = 17.0;
+
+    public static double samplePos3X = 50;
+    public static double samplePos3Y = 25;
+    public static double samplePosControl3X = 23;
+    public static double samplePosControl3Y = 29;
+
+    private final Pose push2control1 = new Pose(84.5,32,0);
+    private final Pose push2control2 = new Pose(73.3,8.9,0);
+    private final Pose push2control3 = new Pose(49.9,12.6,0);
+    private final Pose push2control4 = new Pose(31,13.7,0);
 
     /** Highest (Third) Sample from the Spike Mark */
-    private final Pose pickup = new Pose(10, 13, Math.toRadians(0));
-    private final Pose pickup2 = new Pose(14, 30, Math.toRadians(0));
+    private final Pose pickup = new Pose(14, 13, Math.toRadians(0));
+//    private final Pose pickup2 = new Pose(14, 13, Math.toRadians(0));
+    private final Pose pickup2 = new Pose(14, 35, Math.toRadians(0));
 
     /** Park Pose for our robot, after we do all of the scoring. */
     private final Pose parkPose = new Pose(15, 20, Math.toRadians(0));
@@ -140,7 +160,7 @@ public class ITD_UIL_Right2 extends OpMode {
 
     /* These are our Paths and PathChains that we will define in buildPaths() */
     private Path scorePreload, park;
-    private PathChain sample1, sample2push,sample2push2, samplepushUno, sample2, samplepushDos, recoger, prono, recogerFromScore, score, scoreLast;
+    private PathChain sample1, sample3, sample2push,sample2push2, samplepushUno, sample2, samplepushDos, recoger, prono, recogerFromScore, score, scoreLast;
     private boolean range;
     public void sliderMove (int Position){
         OuttakeSliderLeft.setTargetPosition(initialPositionLeft + Position);
@@ -196,8 +216,8 @@ public class ITD_UIL_Right2 extends OpMode {
 
         /* Gets in Position to push the 1st Sample into the Observation Zone */
         sample1 = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(scorePose),new Point(controlsamplepos1), new Point(samplepos1)))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), samplepos1.getHeading())
+                .addPath(new BezierCurve(new Point(scorePose),new Point(score2sampleControl1),new Point(score2sampleControl2), new Point(samplepos1)))
+                .setConstantHeadingInterpolation(scorePose.getHeading())
                 .build();
         sample2push = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(scorePose), new Point(back)))
@@ -207,8 +227,9 @@ public class ITD_UIL_Right2 extends OpMode {
                 .addPath(new BezierLine(new Point(samplepos1),new Point(scoreToSample)))
                 .setConstantHeadingInterpolation(scoreToSample.getHeading())
                 .build();
+
         samplepushUno = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scoreToSample),new Point(samplepush1)))
+                .addPath(new BezierLine(new Point(samplepos1),new Point(samplepush1)))
                 .setConstantHeadingInterpolation(samplepush1.getHeading())
                 .build();
 
@@ -221,8 +242,17 @@ public class ITD_UIL_Right2 extends OpMode {
                 .build();
 
         samplepushDos = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(samplepush1),new Point(push2control1),new Point(samplepos2)))
+                .setConstantHeadingInterpolation(samplepush2.getHeading())
                 .addPath(new BezierLine(new Point(samplepos2),new Point(samplepush2)))
                 .setConstantHeadingInterpolation(samplepush2.getHeading())
+                .build();
+
+        sample3 = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(samplepush2), new Point(samplepos1)))
+                .setConstantHeadingInterpolation(controlsamplepos12.getHeading())
+                .addPath(new BezierCurve(new Point(controlsamplepos12),new Point(samplepos2)))
+                .setConstantHeadingInterpolation(samplepos2.getHeading())
                 .build();
 
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
@@ -266,8 +296,8 @@ public class ITD_UIL_Right2 extends OpMode {
                 follower.followPath(scorePreload, true);
                 sliderMove(HIGH_CHAMBER);
                 outtakeElbow(OuttakeElbowPositionMiddle);
-                OuttakeElbowRight.setPosition(0.75);
-                OuttakeWrist.setPosition(0.45);
+                OuttakeElbowRight.setPosition(OuttakeElbowPositionSpecimenAiming);
+                OuttakeWrist.setPosition(OuttakeWristPositionSpecimenAiming);
                 setPathState(2);
                 break;
             case 1:
@@ -280,8 +310,8 @@ public class ITD_UIL_Right2 extends OpMode {
             ///Scores Preload
                 if (follower.getPose().getX() >= scorePoseX - 1.25 && follower.getPose().getY() >= scorePoseY - 0.65) {
 
-                    OuttakeWrist.setPosition(1.0);
-                    OuttakeElbowRight.setPosition(0.25);
+                    OuttakeWrist.setPosition(OuttakeWristPositionScorePreload);
+                    OuttakeElbowRight.setPosition(OuttakeElbowPositionSpecimenScoring);
                     setPathState(3);
                 }
                 break;
@@ -289,14 +319,16 @@ public class ITD_UIL_Right2 extends OpMode {
             ///Resets everything to Init. Pos.
                 if (pathTimer.getElapsedTimeSeconds() >= 1) {
                     OuttakeClaw.setPosition(OuttakeClawPositionOpen);
-                    setPathState(4);
+                    sliderMove(0);
+                    follower.followPath(sample1);
+                    setPathState(5);
                 }
                 break;
             case 4:
             ///Moves towards 1st Sample
                 if(pathTimer.getElapsedTimeSeconds()>0.15 && pathTimer.getElapsedTimeSeconds()<0.75) {
                     sliderMove(0);
-                    OuttakeWrist.setPosition(0.6);
+                    OuttakeWrist.setPosition(OuttakeWristPositionAfterScore);
                 }
                 if (pathTimer.getElapsedTimeSeconds() >= 0.65) {
                     follower.followPath(sample2push);
@@ -307,13 +339,16 @@ public class ITD_UIL_Right2 extends OpMode {
             ///Pushes 1st Sample
                 if (!follower.isBusy()) {
                     follower.followPath(samplepushUno);
-                    setPathState(6);
+                    OuttakeElbowRight.setPosition(0.25);
+                    OuttakeWrist.setPosition(0.5);
+                    setPathState(7);
                 }
                 break;
             case 6:
             ///Moves Towards 2nd Sample
                 if (!follower.isBusy()) {
-                    follower.followPath(sample2);
+                    follower.followPath(samplepushDos);
+
                     setPathState(7);
                 }
                 break;
@@ -321,8 +356,8 @@ public class ITD_UIL_Right2 extends OpMode {
             ///Pushes 2nd Sample
                 if (!follower.isBusy()) {
                     follower.followPath(samplepushDos);
-                    OuttakeElbowRight.setPosition(0.25);
-                    OuttakeWrist.setPosition(0.5);
+                    OuttakeElbowRight.setPosition(OuttakeElbowPositionOut);
+                    OuttakeWrist.setPosition(OuttakeWristPositionOut);
                     setPathState(8);
                 }
                 break;
@@ -330,7 +365,7 @@ public class ITD_UIL_Right2 extends OpMode {
             ///Prepares to grab 1st Specimen
                 if (!follower.isBusy()) {
                     follower.followPath(recoger);
-                    setPathState(9);
+                    setPathState(10);
                 }
                 break;
             case 9:
@@ -344,7 +379,7 @@ public class ITD_UIL_Right2 extends OpMode {
             case 10:
             ///Grabs 1st Specimen
                 if (!follower.isBusy()) {
-                    if (pathTimer.getElapsedTimeSeconds() >= 0.25) {
+                    if (pathTimer.getElapsedTimeSeconds() >= 1.25) {
                         OuttakeClaw.setPosition(OuttakeClawPositionClose);
                         setPathState(11);
                     }
@@ -368,7 +403,7 @@ public class ITD_UIL_Right2 extends OpMode {
                     follower.setMaxPower(0.9);
                     follower.followPath(score, true);
 
-                    setPathState(13);
+                    setPathState(-1);
                 }
                 break;
             case 13:
@@ -519,7 +554,7 @@ public class ITD_UIL_Right2 extends OpMode {
         OuttakeClaw = hardwareMap.get(Servo.class, "OuttakeClaw");
         OuttakeWrist = hardwareMap.get(Servo.class, "OuttakeWrist");
         OuttakeElbowRight = hardwareMap.get(Servo.class, "OuttakeElbowRight");
-        //OuttakeWrist = hardwareMap.get(Servo.class, "OuttakeWrist");
+        block = hardwareMap.get(Servo.class, "block");
 
         OuttakeClaw.setDirection(Servo.Direction.FORWARD);
         OuttakeClaw.setPosition(OuttakeClawPositionClose);
@@ -541,6 +576,7 @@ public class ITD_UIL_Right2 extends OpMode {
         OuttakeElbowRight.setPosition(0.5);
         IntakeElbowRight.setPosition(0.30);
         IntakeWrist.setPosition(IntakeWristInitialPosition);
+        block.setPosition(0.5);
 
 
         Constants.setConstants(FConstants.class, LConstants.class);

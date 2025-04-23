@@ -2,7 +2,7 @@ package pedroPathing;
 
 public class Crush {
     private static Crush instance;
-    private int InitialPositionRightOuttakeSlider = 0, InitialPositionLeftOuttakeSlider = 0;
+    private int InitialPositionLeftOuttakeSlider = 0;
     private boolean slidersInitialized = false; // Flag to track initialization
 
     private Crush() {} // Private constructor to enforce singleton pattern
@@ -14,15 +14,11 @@ public class Crush {
         return instance;
     }
 
-    public void setInitialPositions(int right, int left) {
-//        this.InitialPositionRightOuttakeSlider = right;
+    public void setInitialPositions(int left) {
         this.InitialPositionLeftOuttakeSlider = left;
         this.slidersInitialized = true; // Mark as initialized
     }
 
-//    public int getRight() {
-//        return InitialPositionRightOuttakeSlider;
-//    }
 
     public int getLeft() {
         return InitialPositionLeftOuttakeSlider;

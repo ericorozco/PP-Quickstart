@@ -18,7 +18,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.robot.Robot;
-
+import pedroPathing.Crush;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
@@ -101,7 +101,7 @@ public class ITD_UIL_Right extends OpMode {
 
     /** Lowest (First) Sample from the Spike Mark */
     public static double samplePos1X = 57.0;
-    public static double samplepos1Y = 38.0;
+    public static double samplepos1Y = 36.0;
     private final Pose samplepos1 = new Pose(samplePos1X, samplepos1Y, Math.toRadians(0));
     private final Pose Control1 = new Pose(10,36,Math.toRadians(0));
     private final Pose controlsamplepos1 = new Pose(80, 36, Math.toRadians(0));
@@ -507,7 +507,7 @@ public class ITD_UIL_Right extends OpMode {
         OuttakeSliderLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
         initialPositionLeft = OuttakeSliderLeft.getCurrentPosition();
-        //Crush.getInstance().setInitialPositions(initialPositionRight, initialPositionLeft);
+        Crush.getInstance().setInitialPositions(initialPositionLeft);
 
         //Servo Claw, Elbow, and Wrist Mapping and Setup
         OuttakeClaw = hardwareMap.get(Servo.class, "OuttakeClaw");
