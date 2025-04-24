@@ -124,7 +124,7 @@ public class AyCrush2P_PP extends OpMode {
     final double OuttakeWristPositionOut = 0.80;
     final double OuttakeWristPositionSpecimen = 0.5;
     final double OuttakeWristPositionIn = 0.00;
-    final double OuttakeWristPositionScoreBasket = 0.50;
+    final double OuttakeWristPositionScoreBasket = 0.25;
     final double OuttakeWristPositionTransfer = 0.82;
     final double OuttakeClawPositionClose = 0.35;
     final double OuttakeClawPositionOpen = 0.75;
@@ -174,8 +174,7 @@ public class AyCrush2P_PP extends OpMode {
         //IntakeElbowRight.scaleRange(0.0, 1.0);
         //IntakeElbowLeft.scaleRange(0.0, 1.0);
 
-        IntakeWrist.setPosition(0.5); //Init Position for Wrist
-        IntakeElbowRight.setPosition(IntakeElbowPositionIn); //Init Position for Wrist
+
         /**
          * Outtake Code Starts Here
          */
@@ -229,6 +228,8 @@ public class AyCrush2P_PP extends OpMode {
         OuttakeElbowRight.setPosition(OuttakeElbowPositionMiddle);
         OuttakeWrist.setPosition(OuttakeWristPositionOut);
         OuttakeClaw.setPosition(OuttakeClawPositionOpen);
+        IntakeWrist.setPosition(0.5); //Init Position for Wrist
+        IntakeElbowRight.setPosition(IntakeElbowPositionIn); //Init Position for Wrist
     }
     /**
      * This runs the OpMode. This is only drive control with Pedro Pathing live centripetal force
@@ -361,13 +362,13 @@ public class AyCrush2P_PP extends OpMode {
                                         setSampleScoringState(SampleScoringState.GRABBED_SPECIMEN);
                                         OuttakeElbowRight.setPosition(OuttakeElbowPositionSpecimenScoring);
                                         OuttakeWrist.setPosition(OuttakeWristPositionSpecimen);
-                                        outtakeSliders(HIGH_CHAMBER,0,0);
+                                        outtakeSliders(HIGH_CHAMBER-100,0,0);
                                     }
                                 break;
                             case GRABBED_SPECIMEN:
                                 if(transferTime.seconds()>0.25 && gamepad2.cross){
 
-                                    outtakeSliders(HIGH_CHAMBER + 200,0 ,0);
+                                    outtakeSliders(HIGH_CHAMBER+300,0 ,0);
                                     OuttakeElbowRight.setPosition(OuttakeElbowPositionSpecimen);
                                         OuttakeWrist.setPosition(OuttakeWristPositionSpecimen);
                                         setSampleScoringState(SampleScoringState.SCORING_SPECIMEN);
@@ -375,22 +376,23 @@ public class AyCrush2P_PP extends OpMode {
                                 break;
                             case SCORING_SPECIMEN:
                                     if(transferTime.seconds()>0.5){
-                                        OuttakeClaw.setPosition(OuttakeClawPositionOpen);
+                                        //OuttakeClaw.setPosition(OuttakeClawPositionOpen);
                                         setSampleScoringState(SampleScoringState.SCORED_SPECIMEN);
                                         outtakeSliders(0, 0, 0);
                                     }
                                 break;
                             case SCORED_SPECIMEN:
-                                    if(transferTime.seconds()>0.25){
+                                    if(transferTime.seconds()>0.75){
+                                        OuttakeClaw.setPosition(OuttakeClawPositionOpen);
                                         setSampleScoringState(SampleScoringState.INIT);
                                     }
                                 break;
 
                             case SCORING:
-                                if(transferTime.seconds()>1.25){
+                                if(transferTime.seconds()>2.25){
                                     OuttakeWrist.setPosition(OuttakeWristPositionScoreBasket);
                                 }
-                                if(transferTime.seconds()>2.0){
+                                if(transferTime.seconds()>2.75){
                                     OuttakeClaw.setPosition(OuttakeClawPositionOpen);
                                     setSampleScoringState(SampleScoringState.SCORED);
 //                                    sampleScoringState = SampleScoringState.SCORED;
@@ -398,11 +400,11 @@ public class AyCrush2P_PP extends OpMode {
                                 }
                                 break;
                             case SCORED:
-                                if(transferTime.seconds()>0.05){
+                                if(transferTime.seconds()>0.25){
                                     OuttakeWrist.setPosition(OuttakeWristPositionOut);
 //                                    OuttakeClaw.setPosition(OuttakeClawPositionClose);
                                 }
-                                if(transferTime.seconds()>0.15){
+                                if(transferTime.seconds()>0.35){
                                     outtakeSliders(0,0,0);
                                     setSampleScoringState(SampleScoringState.INIT);
 //                                    sampleScoringState = SampleScoringState.INIT;
