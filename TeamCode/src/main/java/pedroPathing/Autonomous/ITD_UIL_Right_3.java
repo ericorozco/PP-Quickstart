@@ -123,7 +123,7 @@ public class ITD_UIL_Right_3 extends OpMode {
     /** Highest (Third) Sample from the Spike Mark */
     private final Pose pickup = new Pose(14, 17, Math.toRadians(0));
     private final Pose pickup3 = new Pose(16, 33, Math.toRadians(0));
-    private final Pose pickup2 = new Pose(16, 33, Math.toRadians(0));
+    private final Pose pickup2 = new Pose(18, 33, Math.toRadians(0));
 
     /** Park Pose for our robot, after we do all of the scoring. */
     private final Pose parkPose = new Pose(15, 20, Math.toRadians(0));
@@ -349,7 +349,7 @@ public class ITD_UIL_Right_3 extends OpMode {
 
             ///Picks up Claw and Sliders
 
-                    if (pathTimer.getElapsedTimeSeconds() >= 0.35) {
+                    if (pathTimer.getElapsedTimeSeconds() >= 0.65) {
                         //outtakeElbow(OuttakeElbowPositionMiddle);
                         OuttakeElbowRight.setPosition(0.75);
                         OuttakeWrist.setPosition(0.45);
@@ -369,7 +369,7 @@ public class ITD_UIL_Right_3 extends OpMode {
             case 13:
             ///Scores 1st Specimen
                 if(pathTimer.getElapsedTimeSeconds()>0.5 && pathTimer.getElapsedTimeSeconds()<1){
-                    sliderMove(HIGH_CHAMBER);
+                    sliderMove(HIGH_CHAMBER-50);
                 }
                 if (follower.getPose().getX() >= scorePoseX - 1.5 && follower.getPose().getY() >= scorePoseY - 0.6) {
                     OuttakeWrist.setPosition(0.75);
@@ -389,8 +389,6 @@ public class ITD_UIL_Right_3 extends OpMode {
                 case 15:
                     if (!follower.isBusy() || pathTimer.getElapsedTimeSeconds()>3.0){
                         follower.followPath(recogerFromScore,true);
-                        OuttakeClaw.setPosition(OuttakeClawPositionOpen);
-
                         OuttakeElbowRight.setPosition(0.25);
                         OuttakeWrist.setPosition(0.5);
                         setPathState(17);
