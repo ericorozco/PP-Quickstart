@@ -91,6 +91,12 @@ public class ITD_UIL_Right extends OpMode {
     public static double scorePoseX = 39.0;
     public static double scorePoseY = 65.0;
     private final Pose scorePose = new Pose(scorePoseX, scorePoseY, Math.toRadians(0));
+    public static double scorePose2X = 39.0;
+    public static double scorePose2Y = 65.0;
+    private final Pose scorePose2 = new Pose(scorePose2X, scorePose2Y, Math.toRadians(0));
+    public static double scorePose3X = 39.0;
+    public static double scorePose3Y = 65.0;
+    private final Pose scorePose3 = new Pose(scorePose3X, scorePose3Y, Math.toRadians(0));
     private final Pose scorePoseLast = new Pose(scorePoseX+10, scorePoseY+10, Math.toRadians(0));
     public static double scoreToSampleX = 57.0;
     public static double scoreToSampleY = 25.0;
@@ -114,7 +120,7 @@ public class ITD_UIL_Right extends OpMode {
     private final Pose samplepos2 = new Pose(samplePos2X, samplepos2Y, Math.toRadians(0));
     public static double samplePos2X = 57.0;
     public static double samplepos2Y = 17.0;
-    private final Pose controlsamplepos2 = new Pose(75, 26, Math.toRadians(0));
+    private final Pose score2pickcontrol = new Pose(41, 23.6, Math.toRadians(0));
 
     /** Middle (Second) Sample from the Spike Mark */
     private final Pose samplepush2 = new Pose(samplepush2X, samplepush2Y, Math.toRadians(0));
@@ -122,7 +128,7 @@ public class ITD_UIL_Right extends OpMode {
     public static double samplepush2Y = 17.0;
 
     /** Highest (Third) Sample from the Spike Mark */
-    private final Pose pickup = new Pose(27, 30, Math.toRadians(0));
+    private final Pose pickup = new Pose(25, 30, Math.toRadians(0));
     private final Pose pickup2 = new Pose(14, 30, Math.toRadians(0));
 
     /** Park Pose for our robot, after we do all of the scoring. */
@@ -134,7 +140,7 @@ public class ITD_UIL_Right extends OpMode {
 
     /* These are our Paths and PathChains that we will define in buildPaths() */
     private Path scorePreload, park;
-    private PathChain sample1, sample2push,sample2push2, samplepushUno, sample2, samplepushDos, recoger, prono, recogerFromScore, score, scoreLast;
+    private PathChain sample1, sample2push,sample2push2, samplepushUno, sample2, samplepushDos, recoger, prono, recogerFromScore, score,score2,score3, scoreLast;
     private boolean range;
     public void sliderMove (int Position){
         OuttakeSliderLeft.setTargetPosition(initialPositionLeft + Position);
@@ -229,11 +235,19 @@ public class ITD_UIL_Right extends OpMode {
                 .setConstantHeadingInterpolation(samplepush2.getHeading())
                 .build();
         recogerFromScore = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scorePose), new Point(pickup)))
+                .addPath(new BezierCurve(new Point(scorePose),new Point(score2pickcontrol), new Point(pickup)))
                 .setConstantHeadingInterpolation(pickup.getHeading())
                 .build();
         score = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(pickup2), new Point(scorePose)))
+                .setConstantHeadingInterpolation(scorePose.getHeading())
+                .build();
+        score2 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(pickup2), new Point(scorePose2)))
+                .setConstantHeadingInterpolation(scorePose.getHeading())
+                .build();
+        score3 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(pickup2), new Point(scorePose3)))
                 .setConstantHeadingInterpolation(scorePose.getHeading())
                 .build();
         scoreLast = follower.pathBuilder()
@@ -360,7 +374,7 @@ public class ITD_UIL_Right extends OpMode {
             ///Goes to Score 1st Specimen
                 if (!follower.isBusy()) {
                     follower.setMaxPower(0.9);
-                    follower.followPath(score, true);
+                    follower.followPath(score2, true);
 
                     setPathState(13);
                 }
@@ -416,7 +430,7 @@ public class ITD_UIL_Right extends OpMode {
                         if (pathTimer.getElapsedTimeSeconds() >= 0.45) {
                             setPathState(181);
                             follower.setMaxPower(0.9);
-                            follower.followPath(score);
+                            follower.followPath(score3);
 //                            sliderMove(HIGH_CHAMBER+50);
                             OuttakeElbowRight.setPosition(0.75);
                             OuttakeWrist.setPosition(0.45);
