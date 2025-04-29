@@ -230,6 +230,9 @@ public class AyCrush2P_PP extends OpMode {
         OuttakeClaw.setPosition(OuttakeClawPositionOpen);
         IntakeWrist.setPosition(0.5); //Init Position for Wrist
         IntakeElbowRight.setPosition(IntakeElbowPositionIn); //Init Position for Wrist
+        if (OuttakeSliderLeft.getCurrentPosition() > Crush.getInstance().getLeft()) {
+            outtakeSliders(0, 0, 0);
+        }
     }
     /**
      * This runs the OpMode. This is only drive control with Pedro Pathing live centripetal force

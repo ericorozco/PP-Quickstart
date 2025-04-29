@@ -88,11 +88,11 @@ public class ITD_UIL_Right_3 extends OpMode {
     private final Pose startPose = new Pose(9, 62, Math.toRadians(0));
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    public static double scorePoseX = 37.7;
+    public static double scorePoseX = 37;
     public static double scorePoseY = 69.0;
     private final Pose scorePose = new Pose(scorePoseX, scorePoseY, Math.toRadians(0));
-    public static double scorePose2X = 38.450;
-    public static double scorePose2Y = 71.0;
+    public static double scorePose2X = 38.60;
+    public static double scorePose2Y = 66.0;
     private final Pose scorePose2 = new Pose(scorePose2X, scorePose2Y, Math.toRadians(0));
     public static double scorePose3X = 38.450;
     public static double scorePose3Y = 73.0;
@@ -391,13 +391,13 @@ public class ITD_UIL_Right_3 extends OpMode {
                 if(pathTimer.getElapsedTimeSeconds()>0.5 && pathTimer.getElapsedTimeSeconds()<1){
                     sliderMove(HIGH_CHAMBER-50);
                 }
-                if (follower.getPose().getX() >= scorePoseX - 1.5 && follower.getPose().getY() >= scorePoseY - 0.6) {
+                if (follower.getPose().getX() >= scorePose2X - 1.5 && follower.getPose().getY() >= scorePose2Y - 0.6) {
                     OuttakeWrist.setPosition(0.75);
                     OuttakeElbowRight.setPosition(0.25);
                     setPathState(14);
                 }
                 break;
-                case 14:
+            case 14:
                     if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds()>0.75) {
                         OuttakeClaw.setPosition(OuttakeClawPositionOpen);
                         //outtakeElbow(OuttakeElbowPositionMiddle);
@@ -406,7 +406,7 @@ public class ITD_UIL_Right_3 extends OpMode {
                         pathTimer.resetTimer();
                     }
                     break;
-                case 15:
+            case 15:
                     if (!follower.isBusy() || pathTimer.getElapsedTimeSeconds()>3.0){
                         follower.followPath(recogerFromScore,true);
                         OuttakeElbowRight.setPosition(0.23);
