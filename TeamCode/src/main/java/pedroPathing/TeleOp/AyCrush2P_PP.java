@@ -96,9 +96,10 @@ public class AyCrush2P_PP extends OpMode {
 //    private Servo IntakeElbowLeft;
     private Servo IntakeWrist;
     final double IntakeWristInitialPosition = 0.5;
+    private Servo block;
 
-    public static int HIGH_BASKET = 3600;
-    public static int HIGH_CHAMBER = 2000;
+    public static int HIGH_BASKET = 2500;
+    public static int HIGH_CHAMBER = 1400;
     public static int initialPositionLeft, initialPositionRight;
     int hangersCurrentState = 0;
     private boolean IntakeElbowDown = false;
@@ -118,23 +119,25 @@ public class AyCrush2P_PP extends OpMode {
     final double OuttakeElbowPositionTransfer = 0.27;
     final double OuttakeElbowPositionSpecimenScoring = 0.21;
     final double OuttakeElbowPositionScoreBasket = 0.7;
-    final double OuttakeElbowPositionSpecimen = 0.77;
+    final double OuttakeElbowPositionSpecimen = 0.75;
     final double OuttakeElbowPositionOut = 0.89;
     final double OuttakeElbowPositionMiddle = 0.48;
     final double OuttakeWristPositionOut = 0.80;
-    final double OuttakeWristPositionSpecimen = 0.5;
+    final double OuttakeWristPositionSpecimen = 0.47;
     final double OuttakeWristPositionIn = 0.00;
     final double OuttakeWristPositionScoreBasket = 0.25;
     final double OuttakeWristPositionTransfer = 0.82;
-    final double OuttakeClawPositionClose = 0.35;
-    final double OuttakeClawPositionOpen = 0.75;
+    final double OuttakeClawPositionClose = 0.1;
+    final double OuttakeClawPositionOpen = 0.85;
     boolean TurnOuttakeSlidersOff = false;
     private int intakeCurrentState = 0;
     public int PlayerSelection = 1;
+    public boolean inEndgame;
+    public boolean blockpos;
     public int leftPosition, rightPosition, rightHangerInitialPosition, leftHangerInitialPosition;
-    public ElapsedTime slidersElapsedTime, transferTime, sampleScoringTime;
+    public ElapsedTime slidersElapsedTime, transferTime, sampleScoringTime, playTime;
 
-
+public boolean hangersMoving= false;
 
     /**
      * This initializes the drive motors as well as the Follower and motion Vectors.
@@ -153,6 +156,8 @@ public class AyCrush2P_PP extends OpMode {
         //Servo Sliders Mapping and Setup
         IntakeSliderRight = hardwareMap.get(Servo.class, "IntakeSliderRight");
         IntakeSliderLeft = hardwareMap.get(Servo.class, "IntakeSliderLeft");
+
+        block = hardwareMap.get(Servo.class, "block");
 
         IntakeSliderRight.setDirection(Servo.Direction.FORWARD);
         IntakeSliderLeft.setDirection(Servo.Direction.REVERSE);
@@ -215,6 +220,8 @@ public class AyCrush2P_PP extends OpMode {
         slidersElapsedTime.reset();
 
         transferTime = new ElapsedTime();
+        playTime = new ElapsedTime();
+        inEndgame = false;
 
 
         transferTime.reset();
@@ -233,6 +240,7 @@ public class AyCrush2P_PP extends OpMode {
         if (OuttakeSliderLeft.getCurrentPosition() > Crush.getInstance().getLeft()) {
             outtakeSliders(0, 0, 0);
         }
+        playTime.reset();
     }
     /**
      * This runs the OpMode. This is only drive control with Pedro Pathing live centripetal force
@@ -250,7 +258,7 @@ public class AyCrush2P_PP extends OpMode {
         switch (PlayerSelection){
             case 1:
                         if(sampleScoringState == SampleScoringState.AIMING || sampleScoringState == SampleScoringState.AIMING_SPECIMEN ){
-                            follower.setMaxPower(0.25);
+                            follower.setMaxPower(0.35);
                         }else{
                             follower.setMaxPower(1.0);
                         }
@@ -268,6 +276,7 @@ public class AyCrush2P_PP extends OpMode {
                                     intakeSlidersElbow(IntakeState.IN);
                                     IntakeClaw.setPosition(IntakeClawPositionOpen);
                                     OuttakeElbowMove(OuttakeElbowPositionMiddle);
+                                    OuttakeWrist.setPosition(OuttakeWristPositionOut);
                                     intakeCurrentState = 0;
                                 }
                                 if(gamepad2.square){
@@ -300,6 +309,11 @@ public class AyCrush2P_PP extends OpMode {
                                 } else if (!gamepad1.left_bumper && !gamepad1.right_bumper) {
                                     IntakeWristChanged = false;
                                 }
+                                if(gamepad1.dpad_left){
+                                    IntakeSliderMove(0.005);
+                                }else if(gamepad1.dpad_right){
+                                    IntakeSliderMove(-0.005);
+                                }
                                 break;
                             case GRAB:
                                 if(gamepad1.cross && intakeCurrentState==0){
@@ -327,6 +341,7 @@ public class AyCrush2P_PP extends OpMode {
                                 if(transferTime.seconds()>0.25){
                                     OuttakeElbowMove(OuttakeElbowPositionMiddle);
                                     OuttakeWrist.setPosition(OuttakeWristPositionOut);
+
                                 }
                                 if(gamepad1.cross && transferTime.seconds()>0.25){
                                     outtakeSliders(HIGH_BASKET,0,0);
@@ -392,10 +407,10 @@ public class AyCrush2P_PP extends OpMode {
                                 break;
 
                             case SCORING:
-                                if(transferTime.seconds()>2.25){
+                                if(transferTime.seconds()>1.75){
                                     OuttakeWrist.setPosition(OuttakeWristPositionScoreBasket);
                                 }
-                                if(transferTime.seconds()>2.75){
+                                if(transferTime.seconds()>2.10){
                                     OuttakeClaw.setPosition(OuttakeClawPositionOpen);
                                     setSampleScoringState(SampleScoringState.SCORED);
 //                                    sampleScoringState = SampleScoringState.SCORED;
@@ -456,7 +471,16 @@ public class AyCrush2P_PP extends OpMode {
                 hangersCurrentState = 0;
             }
 
-            if(gamepad2.options && hangersCurrentState==0){
+            if (gamepad1.touchpad && blockpos){
+                block.setPosition(1);
+                blockpos = false;
+            } else if (gamepad1.touchpad && !blockpos) {
+                block.setPosition(0.5);
+                blockpos = true;
+            }
+
+
+                if(gamepad2.options && hangersCurrentState==0){
                 hangersMove(-2000);
                 hangersCurrentState=1;
 
@@ -608,20 +632,32 @@ public class AyCrush2P_PP extends OpMode {
             TurnOuttakeSlidersOff = false;
         }
 
+        if(gamepad1.dpad_down){
 
-        //Outtake elbow automatically goes out after reaching high basket position
-        /*if((OuttakeSliderLeft.getCurrentPosition()>(HIGH_BASKET-20))
-                && (((OuttakeElbowRight.getPosition()==OuttakeElbowPositionMiddle)
-                || (OuttakeElbowRight.getPosition()==OuttakeElbowPositionIn)))){
+            outtakeSliders(-100, 2000, 1);
 
-            OuttakeElbowMove(OuttakeElbowPositionOut);
-        }*/
-        if(gamepad1.dpad_up){
+        }else if(gamepad1.dpad_up){
+
+            outtakeSliders(100, 2000, 1);
+
+        }
+        if(playTime.seconds()>110 && !hangersMoving){
+            hangersMove(5500);
+            hangersMoving = true;
+        }if(playTime.seconds()>40 && !inEndgame){
+            gamepad1.rumble(3000);
+            gamepad2.rumble(3000);
+            OuttakeWrist.setPosition(OuttakeWristPositionIn);
+            endgameLED();
+            inEndgame = true;
+        }
+        /*if(gamepad1.dpad_up){
+
             OuttakeWrist.setPosition(OuttakeWrist.getPosition() + 0.01);
         }else if(gamepad1.dpad_down){
             OuttakeWrist.setPosition(OuttakeWrist.getPosition() - 0.01);
-        }
-        if(gamepad1.share){
+        }*/
+        /*if(gamepad1.share){
             PlayerSelection = 2;
         }else if(gamepad1.options){
             PlayerSelection = 1;
@@ -635,7 +671,7 @@ public class AyCrush2P_PP extends OpMode {
             PlayerSelection = 2;
         }else if(gamepad1.options){
             PlayerSelection = 1;
-        }
+        }*/
         //All Telemetry goes here
         // Lets get the target positions.
         telemetry.addData("Intake Slider Right Pos: ", IntakeSliderRight.getPosition() );
@@ -649,6 +685,7 @@ public class AyCrush2P_PP extends OpMode {
         telemetry.addData("Left Position: ", leftPosition );
         telemetry.addData("Right Position: ", rightPosition );
         telemetry.addData("CURRENT STATE: ", sampleScoringState );
+        telemetry.addData("Play Time: ", playTime.seconds() );
 
 
 
@@ -656,15 +693,12 @@ public class AyCrush2P_PP extends OpMode {
     }
     public void outtakeSliders(int targetPosition, int velocity, int manual_override){
         // Set run modes for both motors
-        //OuttakeSliderRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         OuttakeSliderLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Synchronize motion
         if(manual_override == 0) {
-            //OuttakeSliderRight.setTargetPosition(targetPosition + initialPositionRight);
             OuttakeSliderLeft.setTargetPosition(targetPosition + initialPositionLeft);
         }else{
-            //OuttakeSliderRight.setTargetPosition(targetPosition + OuttakeSliderRight.getCurrentPosition());
             OuttakeSliderLeft.setTargetPosition(targetPosition + OuttakeSliderLeft.getCurrentPosition());
         }
         if(targetPosition < 10){
@@ -672,31 +706,13 @@ public class AyCrush2P_PP extends OpMode {
             slidersElapsedTime.reset();
         }
         //Run to target position
-        //OuttakeSliderRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         OuttakeSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         //Set power
-        //OuttakeSliderRight.setPower(0.95);
-        OuttakeSliderLeft.setPower(1.0);
-        // while(OuttakeSliderRight.isBusy() && OuttakeSliderLeft.isBusy()){
+        OuttakeSliderLeft.setPower(0.85);
 
-        //}
 
-        /*
-        // Set the same PID coefficients for both motors
-        OuttakeSliderRight.setVelocityPIDFCoefficients(2.0, 0.5, 0.1, 0.0);
-        OuttakeSliderLeft.setVelocityPIDFCoefficients(2.0, 0.5, 0.1, 0.0);
 
-        // Synchronize motion
-        OuttakeSliderRight.setTargetPosition(targetPosition + initialPositionRight);
-        OuttakeSliderLeft.setTargetPosition(targetPosition + initialPositionLeft);
-
-        OuttakeSliderRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        OuttakeSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        OuttakeSliderRight.setVelocity(velocity);  // Set velocity in ticks per second
-        OuttakeSliderLeft.setVelocity(velocity);
-        */
     }
     public void OuttakeSlidersResetInitialPosition(){
         initialPositionLeft = OuttakeSliderLeft.getCurrentPosition();
@@ -769,6 +785,10 @@ public class AyCrush2P_PP extends OpMode {
         sampleScoringState = pState;
         transferTime.reset();
 
+    }
+    public void endgameLED(){
+        gamepad1.setLedColor(255,0,0,500);
+        gamepad2.setLedColor(0,0,255,500);
     }
 
 }

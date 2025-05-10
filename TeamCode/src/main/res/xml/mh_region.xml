@@ -10,7 +10,7 @@
 
             <!--All Servos Expansion Hub -->
 
-            <Servo name="OuttakeClaw" port="0" />
+            <Servo name="OuttakeClaw" port="1" />
             <Servo name="OuttakeElbowRight" port="2" />
             <Servo name="IntakeSliderLeft" port="3" />
             <Servo name="IntakeClaw" port="4" />

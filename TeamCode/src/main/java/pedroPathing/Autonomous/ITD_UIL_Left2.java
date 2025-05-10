@@ -31,8 +31,8 @@ import pedroPathing.constants.LConstants;
  * @version 2.0, 11/28/2024
  */
 @Config
-@Autonomous(name = "ITD_UIL_Left", group = "Auto")
-public class ITD_UIL_Left extends OpMode {
+@Autonomous(name = "ITD_UIL_Left-2", group = "Auto")
+public class ITD_UIL_Left2 extends OpMode {
 
     private DcMotorEx OuttakeSliderLeft;
     private Servo OuttakeElbowRight;
@@ -98,9 +98,12 @@ public class ITD_UIL_Left extends OpMode {
     private final Pose startPose = new Pose(8, 112, Math.toRadians(270));
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    public static double scorePoseX = 14.0;
-    public static double scorePoseY = 131.0;
+    public static double scorePoseX = 14.25;
+    public static double scorePoseY = 128.0;
     private final Pose highBasketPose = new Pose(scorePoseX, scorePoseY, Math.toRadians(315));
+    private final Pose highBasketPose2 = new Pose(scorePoseX, 118, Math.toRadians(315));
+    private final Pose highBasketPose3 = new Pose(scorePoseX, scorePoseY, Math.toRadians(315));
+    private final Pose highBasketPose4 = new Pose(scorePoseX, scorePoseY, Math.toRadians(315));
     public static double hbControlX = 27.0;
     public static double hbControlY = 118.0;
     private final Pose controlHighBasketPose = new Pose (hbControlX,hbControlY, Math.toRadians(0));
@@ -194,31 +197,31 @@ public class ITD_UIL_Left extends OpMode {
                 .setLinearHeadingInterpolation(highBasketPose.getHeading(), samplepos1.getHeading())
                 .build();
         sample1Score = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(samplepos1),new Point(highBasketPose)))
-                .setLinearHeadingInterpolation(samplepos1.getHeading(), highBasketPose.getHeading())
+                .addPath(new BezierLine(new Point(samplepos1),new Point(highBasketPose2)))
+                .setLinearHeadingInterpolation(samplepos1.getHeading(), highBasketPose2.getHeading())
                 .build();
         /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         sample2 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(highBasketPose),new Point(samplepos2)))
-                .setLinearHeadingInterpolation(highBasketPose.getHeading(), samplepos2.getHeading())
+                .addPath(new BezierLine(new Point(highBasketPose2),new Point(samplepos2)))
+                .setLinearHeadingInterpolation(highBasketPose2.getHeading(), samplepos2.getHeading())
                 .build();
         sample3 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(highBasketPose),new Point(samplepos3)))
-                .setLinearHeadingInterpolation(highBasketPose.getHeading(), samplepos3.getHeading())
+                .addPath(new BezierLine(new Point(highBasketPose2),new Point(samplepos3)))
+                .setLinearHeadingInterpolation(highBasketPose2.getHeading(), samplepos3.getHeading())
                 .build();
         sample3Score = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(samplepos3),new Point(scorePoseX,scorePoseY + 1)))
-                .setLinearHeadingInterpolation(samplepos3.getHeading(), highBasketPose.getHeading())
+                .setLinearHeadingInterpolation(samplepos3.getHeading(), highBasketPose3.getHeading())
                 .build();
         sample2Score = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(samplepos2),new Point(scorePoseX,scorePoseY + 1)))
-                .setLinearHeadingInterpolation(samplepos2.getHeading(), highBasketPose.getHeading())
+                .setLinearHeadingInterpolation(samplepos2.getHeading(), highBasketPose4.getHeading())
                 .build();
 
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         /* This is our park path. We are using a BezierCurve with 3 points, which is a curved line that is curved based off of the control point */
-        park = new Path(new BezierCurve(new Point(highBasketPose), /* Control Point */ new Point(parkControlPose), new Point(parkPose)));
-        park.setLinearHeadingInterpolation(highBasketPose.getHeading(), parkPose.getHeading());
+        park = new Path(new BezierCurve(new Point(highBasketPose4), /* Control Point */ new Point(parkControlPose), new Point(parkPose)));
+        park.setLinearHeadingInterpolation(highBasketPose4.getHeading(), parkPose.getHeading());
     }
 
     /** This switch is called continuously and runs the pathing, at certain points, it triggers the action state.

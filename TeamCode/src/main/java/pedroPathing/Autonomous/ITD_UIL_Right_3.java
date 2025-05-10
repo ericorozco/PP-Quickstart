@@ -39,7 +39,7 @@ public class ITD_UIL_Right_3 extends OpMode {
     private Servo OuttakeWrist;
     private Servo OuttakeClaw;
     final int HIGH_BASKET = 600;
-    final int HIGH_CHAMBER = 2200;
+    final int HIGH_CHAMBER = 1500;
     public int initialPositionLeft, initialPositionRight;
 
     final double OuttakeElbowPositionOut = 0.0;
@@ -70,6 +70,7 @@ public class ITD_UIL_Right_3 extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int initialPos;
+    private double OuttakewristGrabpos = 0.47;
 
     /** This is the variable where we store the state of our auto.
      * It is used by the pathUpdate method. */
@@ -91,18 +92,18 @@ public class ITD_UIL_Right_3 extends OpMode {
     public static double scorePoseX = 37;
     public static double scorePoseY = 69.0;
     private final Pose scorePose = new Pose(scorePoseX, scorePoseY, Math.toRadians(0));
-    public static double scorePose2X = 38.60;
-    public static double scorePose2Y = 66.0;
+    public static double scorePose2X = 39.2;
+    public static double scorePose2Y = 72.0;
     private final Pose scorePose2 = new Pose(scorePose2X, scorePose2Y, Math.toRadians(0));
-    public static double scorePose3X = 38.450;
-    public static double scorePose3Y = 73.0;
+    public static double scorePose3X = 39.5;
+    public static double scorePose3Y = 74.0;
     private final Pose scorePose3 = new Pose(scorePose3X, scorePose3Y, Math.toRadians(0));
-    public static double scorePose4X = 38.450;
-    public static double scorePose4Y = 75.0;
+    public static double scorePose4X = 39.8;
+    public static double scorePose4Y = 76.0;
     private final Pose scorePose4 = new Pose(scorePose4X, scorePose4Y, Math.toRadians(0));
     private final Pose scorePoseLast = new Pose(scorePoseX+10, scorePoseY+10, Math.toRadians(0));
     public static double scoreToSampleX = 57.0;
-    public static double scoreToSampleY = 25.0;
+    public static double scoreToSampleY = 27.0;
     private final Pose scoreToSample = new Pose(scoreToSampleX,scoreToSampleY,Math.toRadians(0));
     public static double backX = 28.0;
     public static double backY = 62.0;
@@ -123,7 +124,7 @@ public class ITD_UIL_Right_3 extends OpMode {
     private final Pose samplepos2 = new Pose(samplePos2X, samplepos2Y, Math.toRadians(0));
     public static double samplePos2X = 57.0;
     public static double samplepos2Y = 17.0;
-    private final Pose score2pickcontrol = new Pose(30, 22.6, Math.toRadians(0));
+    private final Pose score2pickcontrol = new Pose(32.7, 31.1, Math.toRadians(0));
 
     /** Middle (Second) Sample from the Spike Mark */
     private final Pose samplepush2 = new Pose(samplepush2X, samplepush2Y, Math.toRadians(0));
@@ -131,10 +132,10 @@ public class ITD_UIL_Right_3 extends OpMode {
     public static double samplepush2Y = 17.0;
 
     /** Highest (Third) Sample from the Spike Mark */
-    private final Pose pickup = new Pose(15, 17, Math.toRadians(0));
-    private final Pose pickup3 = new Pose(15, 33, Math.toRadians(0));
-    private final Pose pickup2 = new Pose(20, 33, Math.toRadians(0));
-    private final Pose pickup4 = new Pose(14.3, 33, Math.toRadians(0));
+    private final Pose pickup = new Pose(16, 17, Math.toRadians(0));
+    private final Pose pickup3 = new Pose(18, 33, Math.toRadians(0));
+    private final Pose pickup2 = new Pose(18, 33, Math.toRadians(0));
+    private final Pose pickup4 = new Pose(15.5, 33, Math.toRadians(0));
 
     /** Park Pose for our robot, after we do all of the scoring. */
     private final Pose parkPose = new Pose(15, 20, Math.toRadians(0));
@@ -142,6 +143,7 @@ public class ITD_UIL_Right_3 extends OpMode {
     /** Park Control Pose for our robot, this is used to manipulate the bezier curve that we will create for the parking.
      * The Robot will not go to this pose, it is used a control point for our bezier curve. */
     private final Pose parkControlPose = new Pose(11, 11, Math.toRadians(90));
+    private final Pose score2Control = new Pose(22.2,63.3,0);
 
     /* These are our Paths and PathChains that we will define in buildPaths() */
     private Path scorePreload, park;
@@ -150,7 +152,7 @@ public class ITD_UIL_Right_3 extends OpMode {
     public void sliderMove (int Position){
         OuttakeSliderLeft.setTargetPosition(initialPositionLeft + Position);
         OuttakeSliderLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        OuttakeSliderLeft.setPower(.60);
+        OuttakeSliderLeft.setPower(0.55);
         /*while (OuttakeSliderLeft.isBusy() && OuttakeSliderRight.isBusy()){
 
         }
@@ -252,7 +254,7 @@ public class ITD_UIL_Right_3 extends OpMode {
                 .setConstantHeadingInterpolation(scorePose.getHeading())
                 .build();
         score2 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(pickup2), new Point(scorePose2)))
+                .addPath(new BezierCurve(new Point(pickup2),new Point(score2Control), new Point(scorePose2)))
                 .setConstantHeadingInterpolation(scorePose.getHeading())
                 .build();
         score3 = follower.pathBuilder()
@@ -302,7 +304,7 @@ public class ITD_UIL_Right_3 extends OpMode {
                 break;
             case 3:
             ///Resets everything to Init. Pos.
-                if (pathTimer.getElapsedTimeSeconds() >= 1) {
+                if (pathTimer.getElapsedTimeSeconds() >= .25) {
                     OuttakeClaw.setPosition(OuttakeClawPositionOpen);
                     setPathState(4);
                 }
@@ -337,7 +339,7 @@ public class ITD_UIL_Right_3 extends OpMode {
                 if (!follower.isBusy()) {
                     follower.followPath(samplepushDos);
                     OuttakeElbowRight.setPosition(0.23);
-                    OuttakeWrist.setPosition(0.5);
+                    OuttakeWrist.setPosition(OuttakewristGrabpos);
                     setPathState(8);
                 }
                 break;
@@ -359,10 +361,10 @@ public class ITD_UIL_Right_3 extends OpMode {
             case 10:
             ///Grabs 1st Specimen
                 if (!follower.isBusy() || pathTimer.getElapsedTimeSeconds()>3.0) {
-                    if (pathTimer.getElapsedTimeSeconds() >= 0.2) {
-                        OuttakeClaw.setPosition(OuttakeClawPositionClose);
-                        setPathState(11);
-                    }
+                    //if (pathTimer.getElapsedTimeSeconds() >= 0.2) {
+                    OuttakeClaw.setPosition(OuttakeClawPositionClose);
+                    setPathState(11);
+                //}
                 }
                 break;
             case 11:
@@ -380,7 +382,7 @@ public class ITD_UIL_Right_3 extends OpMode {
             case 12:
             ///Goes to Score 1st Specimen
                 if (!follower.isBusy()) {
-                    follower.setMaxPower(0.9);
+                    follower.setMaxPower(1);
                     follower.followPath(score2, true);
 
                     setPathState(13);
@@ -388,17 +390,17 @@ public class ITD_UIL_Right_3 extends OpMode {
                 break;
             case 13:
             ///Scores 1st Specimen
-                if(pathTimer.getElapsedTimeSeconds()>0.5 && pathTimer.getElapsedTimeSeconds()<1){
-                    sliderMove(HIGH_CHAMBER-50);
+                if(pathTimer.getElapsedTimeSeconds()>0.95 && pathTimer.getElapsedTimeSeconds()<1.15){
+                    sliderMove(HIGH_CHAMBER+50);
                 }
-                if (follower.getPose().getX() >= scorePose2X - 1.5 && follower.getPose().getY() >= scorePose2Y - 0.6) {
+                if (follower.getPose().getX() >= scorePose2X - 2.250 && follower.getPose().getY() >= scorePose2Y - 2.0) {
                     OuttakeWrist.setPosition(0.75);
                     OuttakeElbowRight.setPosition(0.25);
                     setPathState(14);
                 }
                 break;
             case 14:
-                    if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds()>0.75) {
+                    if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds()>1.2) {
                         OuttakeClaw.setPosition(OuttakeClawPositionOpen);
                         //outtakeElbow(OuttakeElbowPositionMiddle);
                         sliderMove(0);
@@ -408,27 +410,25 @@ public class ITD_UIL_Right_3 extends OpMode {
                     break;
             case 15:
                     if (!follower.isBusy() || pathTimer.getElapsedTimeSeconds()>3.0){
+                        follower.setMaxPower(.65);
                         follower.followPath(recogerFromScore,true);
                         OuttakeElbowRight.setPosition(0.23);
-                        OuttakeWrist.setPosition(0.5);
+                        OuttakeWrist.setPosition(OuttakewristGrabpos);
                         setPathState(17);
                     }
                     break;
                 case 16:
                 ///Lines up for 2rd Specimen
                     if (!follower.isBusy()) {
-                        follower.setMaxPower(0.65);
                         follower.followPath(prono2);
                         setPathState(17);
-                        pathTimer.resetTimer();
                         }
                     break;
                 case 17:
                 ///Grabs 2nd Specimen
                         if(pathTimer.getElapsedTimeSeconds()>1.5){
-                            follower.setMaxPower(0.65);
                         }
-                        if (pathTimer.getElapsedTimeSeconds() >= 2.3) {
+                        if (pathTimer.getElapsedTimeSeconds() >= 2.75) {
                             OuttakeClaw.setPosition(OuttakeClawPositionClose);
                             setPathState(18);
                         }
@@ -448,24 +448,30 @@ public class ITD_UIL_Right_3 extends OpMode {
                     break;
             case 181:
                 if (pathTimer.getElapsedTimeSeconds() >= 0.75) {
-                    setPathState(19);
-                    sliderMove(HIGH_CHAMBER+50);
 
+                    sliderMove(HIGH_CHAMBER);
+
+                }
+                if (follower.getPose().getX() >= scorePose3X - 1.25 && follower.getPose().getY() >= scorePose3Y - 0.65) {
+                    setPathState(20);
+                    OuttakeWrist.setPosition(1.0);
+                    OuttakeElbowRight.setPosition(0.23);
                 }
                 break;
                 case 19:
                 ///Scores 2nd Specimen
 //                    if (follower.getPose().getX() >= scorePoseX - 0.6 && follower.getPose().getY() >= scorePoseY - 0.6) {
                     if (!follower.isBusy()) {
-                        OuttakeWrist.setPosition(0.75);
+                        OuttakeWrist.setPosition(OuttakewristGrabpos);
                         OuttakeElbowRight.setPosition(0.23);
                         setPathState(20);
                         pathTimer.resetTimer();
                     }
+
                     break;
                 case 20:
                 ///Resets
-                    if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() >= 1) {
+                    if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() >= 0.75) {
                         //OuttakeClaw.setPosition(OuttakeClawPositionOpen);
                         OuttakeElbowRight.setPosition(0.75);
                         OuttakeWrist.setPosition(0.45);
@@ -477,8 +483,8 @@ public class ITD_UIL_Right_3 extends OpMode {
                     if (!follower.isBusy()){
                         follower.followPath(recogerFromScore,true);
                         OuttakeClaw.setPosition(OuttakeClawPositionOpen);
-                        OuttakeElbowRight.setPosition(0.23);
-                        OuttakeWrist.setPosition(0.5);
+                        OuttakeElbowRight.setPosition(0.22);
+                        OuttakeWrist.setPosition(OuttakewristGrabpos);
                         setPathState(203);
                     }
                     break;
@@ -492,23 +498,21 @@ public class ITD_UIL_Right_3 extends OpMode {
                     }
                     break;*/
                 case 203:
-                    if(pathTimer.getElapsedTimeSeconds()>1.5){
-                        follower.setMaxPower(0.5);
+                    if(pathTimer.getElapsedTimeSeconds()>1.25){
+                        follower.setMaxPower(0.68);
 
                     }
                     ///Grabs 3rd Specimen
                     if (!follower.isBusy() || pathTimer.getElapsedTimeSeconds()>2.5) {
-                        if (pathTimer.getElapsedTimeSeconds() >= 0.2) {
                             OuttakeClaw.setPosition(OuttakeClawPositionClose);
                             setPathState(204);
-                        }
                     }
                     break;
                 case 204:
 
                         if (pathTimer.getElapsedTimeSeconds() >= 0.25) {
                             setPathState(205);
-                            follower.setMaxPower(0.9);
+                            follower.setMaxPower(0.90);
                             follower.followPath(scoreLast);
     //                            sliderMove(HIGH_CHAMBER+50);
                             OuttakeElbowRight.setPosition(0.75);
@@ -517,25 +521,31 @@ public class ITD_UIL_Right_3 extends OpMode {
 
                     break;
                 case 205:
-                    if (pathTimer.getElapsedTimeSeconds() >= 0.75) {
+                    if (pathTimer.getElapsedTimeSeconds() >= 0.85) {
                         setPathState(206);
-                        sliderMove(HIGH_CHAMBER+50);
+                        sliderMove(HIGH_CHAMBER-50);
 
                     }
                     break;
                 case 206:
                     ///Scores 3rd Specimen
+                    if (follower.getPose().getX() >= scorePose4X - 1.25 && follower.getPose().getY() >= scorePose4Y - 0.65) {
+                        setPathState(207);
+                        OuttakeWrist.setPosition(1.0);
+                        OuttakeElbowRight.setPosition(0.23);
+                    }
+                    /*
     //                    if (follower.getPose().getX() >= scorePoseX - 0.6 && follower.getPose().getY() >= scorePoseY - 0.6) {
                     if (!follower.isBusy()) {
                         OuttakeWrist.setPosition(0.75);
                         OuttakeElbowRight.setPosition(0.25);
                         setPathState(207);
                         pathTimer.resetTimer();
-                    }
+                    }*/
                     break;
                 case 207:
                     ///Resets
-                    if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() >= .75) {
+                    if (pathTimer.getElapsedTimeSeconds() >= 0.75) {
                         OuttakeClaw.setPosition(OuttakeClawPositionOpen);
                         OuttakeElbowRight.setPosition(0.75);
                         OuttakeWrist.setPosition(0.45);
@@ -546,6 +556,8 @@ public class ITD_UIL_Right_3 extends OpMode {
                 case 21:
                 ///Park
                     if (!follower.isBusy()){
+                        OuttakeWrist.setPosition(.5);
+                        OuttakeElbowRight.setPosition(.48);
                         follower.setMaxPower(1.0);
                         follower.followPath(park);
                         setPathState(-1);
@@ -613,7 +625,7 @@ public class ITD_UIL_Right_3 extends OpMode {
         OuttakeClaw.setDirection(Servo.Direction.REVERSE);
         OuttakeClaw.setPosition(OuttakeClawPositionClose);
         OuttakeWrist.setDirection(Servo.Direction.REVERSE);
-        block.setPosition(0.5);
+        block.setPosition(0.45);
 
         //Intake
         //Servo Sliders Mapping and Setup
